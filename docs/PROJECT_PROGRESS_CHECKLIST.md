@@ -9,7 +9,7 @@
 - Current default repository: `InMemoryTransactionRepository`
 - Persistence status: Drift scaffolded but not enabled by default
 - Current validation status: `flutter pub get`, `flutter analyze`, `flutter test`, `flutter run -d chrome --web-run-headless --no-resident` PASS
-- Last updated: `2026-05-02` (Phase 7D — Monthly Dashboard + Statistics)
+- Last updated: `2026-05-02` (Phase 7D confirmed committed at fd3f5b9; 7D all-time dashboard/statistics now monthly; Phase 8 not started)
 
 ## 1. Status Legend
 
