@@ -2,7 +2,12 @@ import 'package:expense_app/core/utils/currency_formatter.dart';
 import 'package:expense_app/features/statistics/presentation/widgets/spending_by_category_chart.dart';
 import 'package:expense_app/features/statistics/presentation/widgets/statistics_summary_card.dart';
 import 'package:expense_app/features/statistics/presentation/widgets/top_category_card.dart';
+import 'package:expense_app/features/transactions/domain/monthly_transaction_summary.dart';
+import 'package:expense_app/features/transactions/domain/transaction_filters.dart';
+import 'package:expense_app/features/transactions/domain/transaction_model.dart';
 import 'package:expense_app/features/transactions/presentation/controllers/transaction_controller.dart';
+import 'package:expense_app/features/transactions/presentation/controllers/transaction_filter_controller.dart';
+import 'package:expense_app/features/transactions/presentation/widgets/month_selector.dart';
 import 'package:expense_app/shared/widgets/app_bottom_navigation.dart';
 import 'package:expense_app/shared/widgets/app_scaffold.dart';
 import 'package:expense_app/shared/widgets/empty_state.dart';
@@ -14,10 +19,25 @@ import 'package:go_router/go_router.dart';
 class StatisticsPage extends ConsumerWidget {
   const StatisticsPage({super.key});
 
+  static const List<String> _months = [
+    'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
+    'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8',
+    'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
+  ];
+
+  String _monthLabel(DateTime month) =>
+      '${_months[month.month - 1]} ${month.year}';
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<TransactionState> transactionState = ref.watch(
       transactionControllerProvider,
+    );
+    final TransactionFilterState filter = ref.watch(
+      transactionFilterControllerProvider,
+    );
+    final TransactionFilterController filterCtrl = ref.read(
+      transactionFilterControllerProvider.notifier,
     );
 
     return AppScaffold(
@@ -41,9 +61,13 @@ class StatisticsPage extends ConsumerWidget {
           );
         },
         data: (TransactionState data) {
-          final List<CategoryExpenseSummary> breakdown =
-              data.expenseCategorySummaries;
-          final CategoryExpenseSummary? topCategory = data.topExpenseCategory;
+          final List<TransactionModel> monthlyTransactions =
+              filterTransactionsByMonth(
+            transactions: data.transactions,
+            selectedMonth: filter.selectedMonth,
+          );
+          final MonthlyTransactionSummary summary =
+              MonthlyTransactionSummary(transactions: monthlyTransactions);
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,7 +76,30 @@ class StatisticsPage extends ConsumerWidget {
                 'Bức tranh tài chính hiện tại từ các giao dịch bạn đã nhập.',
                 style: TextStyle(color: Color(0xFF64748B), height: 1.45),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  MonthSelector(
+                    selectedMonth: filter.selectedMonth,
+                    onPreviousMonth: filterCtrl.previousMonth,
+                    onNextMonth: filterCtrl.nextMonth,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Center(
+                child: Text(
+                  _monthLabel(filter.selectedMonth),
+                  key: const Key('statistics_month_label'),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF64748B),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
               GridView.count(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
@@ -63,51 +110,51 @@ class StatisticsPage extends ConsumerWidget {
                 children: [
                   StatisticsSummaryCard(
                     title: 'Tổng thu',
-                    value: formatCurrency(data.totalIncome, withSign: false),
+                    value: formatCurrency(summary.totalIncome, withSign: false),
                     icon: Icons.south_west_rounded,
                     accentColor: const Color(0xFF16A34A),
                   ),
                   StatisticsSummaryCard(
                     title: 'Tổng chi',
-                    value: formatCurrency(data.totalExpense, withSign: false),
+                    value: formatCurrency(summary.totalExpense, withSign: false),
                     icon: Icons.north_east_rounded,
                     accentColor: const Color(0xFFEA580C),
                   ),
                   StatisticsSummaryCard(
                     title: 'Số dư',
-                    value: formatCurrency(data.balance, withSign: false),
+                    value: formatCurrency(summary.balance, withSign: false),
                     icon: Icons.account_balance_wallet_rounded,
                     accentColor: const Color(0xFF2563EB),
                   ),
                   StatisticsSummaryCard(
                     title: 'Số giao dịch',
-                    value: data.totalTransactions.toString(),
+                    value: summary.totalTransactions.toString(),
                     icon: Icons.receipt_long_rounded,
                     accentColor: const Color(0xFF7C3AED),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
-              if (data.totalExpense == 0)
+              if (summary.totalExpense == 0)
                 EmptyState(
                   title: 'Chưa có dữ liệu chi tiêu',
                   message:
-                      'Thêm ít nhất một giao dịch chi tiêu để xem phân tích theo danh mục.',
+                      'Tháng này chưa có khoản chi nào để thống kê.',
                   icon: Icons.pie_chart_outline_rounded,
                   actionLabel: 'Thêm giao dịch',
                   onActionPressed: () => context.push('/transactions/new'),
                 )
               else ...[
-                if (topCategory != null) ...[
+                if (summary.topExpenseCategory != null) ...[
                   TopCategoryCard(
-                    summary: topCategory,
-                    totalExpense: data.totalExpense,
+                    summary: summary.topExpenseCategory!,
+                    totalExpense: summary.totalExpense,
                   ),
                   const SizedBox(height: 24),
                 ],
                 SpendingByCategoryChart(
-                  summaries: breakdown,
-                  totalExpense: data.totalExpense,
+                  summaries: summary.expenseCategorySummaries,
+                  totalExpense: summary.totalExpense,
                 ),
                 const SizedBox(height: 24),
                 const SectionHeader(title: 'Chi tiêu theo danh mục'),
@@ -124,14 +171,14 @@ class StatisticsPage extends ConsumerWidget {
                     children: [
                       for (
                         int index = 0;
-                        index < breakdown.length;
+                        index < summary.expenseCategorySummaries.length;
                         index++
                       ) ...[
                         _CategoryBreakdownRow(
-                          summary: breakdown[index],
-                          totalExpense: data.totalExpense,
+                          summary: summary.expenseCategorySummaries[index],
+                          totalExpense: summary.totalExpense,
                         ),
-                        if (index != breakdown.length - 1)
+                        if (index != summary.expenseCategorySummaries.length - 1)
                           const Divider(height: 24, color: Color(0xFFE2E8F0)),
                       ],
                     ],

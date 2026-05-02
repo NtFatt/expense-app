@@ -32,6 +32,31 @@ bool isSameMonth(DateTime a, DateTime b) {
   return a.year == b.year && a.month == b.month;
 }
 
+/// Filters transactions by selected month only (no type filter, no search).
+/// Returns a new list sorted newest-first by transactionDate, then by createdAt.
+/// Does not mutate the input list.
+List<TransactionModel> filterTransactionsByMonth({
+  required List<TransactionModel> transactions,
+  required DateTime selectedMonth,
+}) {
+  final normalizedMonth = normalizeMonth(selectedMonth);
+
+  final result = transactions
+      .where(
+        (transaction) =>
+            isSameMonth(transaction.transactionDate, normalizedMonth),
+      )
+      .toList();
+
+  result.sort((TransactionModel a, TransactionModel b) {
+    final byDate = b.transactionDate.compareTo(a.transactionDate);
+    if (byDate != 0) return byDate;
+    return b.createdAt.compareTo(a.createdAt);
+  });
+
+  return result;
+}
+
 /// Normalizes search text: trims whitespace and converts to lowercase.
 /// Accent stripping is intentionally deferred to a later phase.
 String normalizeSearchText(String value) {

@@ -1,8 +1,12 @@
 import 'package:expense_app/core/constants/app_constants.dart';
 import 'package:expense_app/core/utils/currency_formatter.dart';
+import 'package:expense_app/features/transactions/domain/monthly_transaction_summary.dart';
+import 'package:expense_app/features/transactions/domain/transaction_filters.dart';
 import 'package:expense_app/features/transactions/domain/transaction_model.dart';
 import 'package:expense_app/features/transactions/presentation/controllers/transaction_controller.dart';
+import 'package:expense_app/features/transactions/presentation/controllers/transaction_filter_controller.dart';
 import 'package:expense_app/features/transactions/presentation/widgets/balance_card.dart';
+import 'package:expense_app/features/transactions/presentation/widgets/month_selector.dart';
 import 'package:expense_app/features/transactions/presentation/widgets/summary_card.dart';
 import 'package:expense_app/features/transactions/presentation/widgets/transaction_tile.dart';
 import 'package:expense_app/shared/widgets/app_bottom_navigation.dart';
@@ -16,10 +20,25 @@ import 'package:go_router/go_router.dart';
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
 
+  static const List<String> _months = [
+    'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
+    'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8',
+    'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
+  ];
+
+  String _monthLabel(DateTime month) =>
+      '${_months[month.month - 1]} ${month.year}';
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<TransactionState> transactionState = ref.watch(
       transactionControllerProvider,
+    );
+    final TransactionFilterState filter = ref.watch(
+      transactionFilterControllerProvider,
+    );
+    final TransactionFilterController filterCtrl = ref.read(
+      transactionFilterControllerProvider.notifier,
     );
 
     return AppScaffold(
@@ -44,8 +63,13 @@ class DashboardPage extends ConsumerWidget {
           );
         },
         data: (TransactionState data) {
-          final List<TransactionModel> recentTransactions = data
-              .recentTransactions(limit: 5);
+          final List<TransactionModel> monthlyTransactions =
+              filterTransactionsByMonth(
+            transactions: data.transactions,
+            selectedMonth: filter.selectedMonth,
+          );
+          final MonthlyTransactionSummary summary =
+              MonthlyTransactionSummary(transactions: monthlyTransactions);
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -58,11 +82,33 @@ class DashboardPage extends ConsumerWidget {
                   fontWeight: FontWeight.w500,
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 12),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  MonthSelector(
+                    selectedMonth: filter.selectedMonth,
+                    onPreviousMonth: filterCtrl.previousMonth,
+                    onNextMonth: filterCtrl.nextMonth,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Text(
+                _monthLabel(filter.selectedMonth),
+                key: const Key('dashboard_month_label'),
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Color(0xFF64748B),
+                ),
+              ),
+              const SizedBox(height: 16),
               BalanceCard(
-                balance: formatCurrency(data.balance, withSign: false),
+                balance: formatCurrency(summary.balance, withSign: false),
                 updatedLabel:
-                    'Đang theo dõi ${data.totalTransactions} giao dịch',
+                    'Đang theo dõi ${summary.totalTransactions} giao dịch',
               ),
               const SizedBox(height: 16),
               Row(
@@ -70,7 +116,8 @@ class DashboardPage extends ConsumerWidget {
                   Expanded(
                     child: SummaryCard(
                       title: 'Thu nhập',
-                      amount: formatCurrency(data.totalIncome, withSign: false),
+                      amount:
+                          formatCurrency(summary.totalIncome, withSign: false),
                       icon: Icons.trending_up,
                       accentColor: const Color(0xFF16A34A),
                       backgroundColor: const Color(0xFFF0FDF4),
@@ -80,10 +127,8 @@ class DashboardPage extends ConsumerWidget {
                   Expanded(
                     child: SummaryCard(
                       title: 'Chi tiêu',
-                      amount: formatCurrency(
-                        data.totalExpense,
-                        withSign: false,
-                      ),
+                      amount:
+                          formatCurrency(summary.totalExpense, withSign: false),
                       icon: Icons.trending_down,
                       accentColor: const Color(0xFFEA580C),
                       backgroundColor: const Color(0xFFFFF7ED),
@@ -93,22 +138,23 @@ class DashboardPage extends ConsumerWidget {
               ),
               const SizedBox(height: 24),
               SectionHeader(
-                title: 'Giao dịch gần đây',
+                title: 'Giao dịch tháng này',
                 actionLabel: 'Xem tất cả',
                 onActionPressed: () => context.go('/transactions'),
               ),
               const SizedBox(height: 8),
-              if (data.isEmpty)
+              if (summary.transactions.isEmpty)
                 EmptyState(
-                  title: 'Chưa có giao dịch nào',
+                  title: 'Chưa có giao dịch tháng này',
                   message:
-                      'Thêm giao dịch đầu tiên để bắt đầu theo dõi thu chi.',
+                      'Thêm giao dịch mới hoặc chuyển sang tháng khác để xem dữ liệu.',
                   icon: Icons.wallet_outlined,
                   actionLabel: 'Thêm giao dịch',
                   onActionPressed: () => context.push('/transactions/new'),
                 )
               else
-                for (final TransactionModel transaction in recentTransactions)
+                for (final TransactionModel transaction
+                    in summary.recentTransactions(limit: 5))
                   TransactionTile(transaction: transaction),
             ],
           );

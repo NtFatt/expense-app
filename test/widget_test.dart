@@ -1,5 +1,6 @@
 import 'package:expense_app/app/app.dart';
 import 'package:expense_app/app/router.dart';
+import 'package:expense_app/features/transactions/presentation/pages/dashboard_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -11,7 +12,7 @@ void main() {
 
     expect(find.text('Quản lý chi tiêu'), findsOneWidget);
     expect(find.text('Số dư hiện tại'), findsOneWidget);
-    expect(find.text('Giao dịch gần đây'), findsOneWidget);
+    expect(find.text('Giao dịch tháng này'), findsOneWidget);
     expect(find.text('Tổng quan'), findsOneWidget);
   });
 
@@ -140,5 +141,87 @@ void main() {
 
     expect(find.byKey(const Key('add_transaction_amount_field')), findsOneWidget);
     expect(find.byKey(const Key('add_transaction_submit_button')), findsOneWidget);
+  });
+
+  testWidgets('Dashboard shows month selector buttons', (WidgetTester tester) async {
+    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    appRouter.go('/');
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('month_selector_previous')), findsWidgets);
+    expect(find.byKey(const Key('month_selector_next')), findsWidgets);
+  });
+
+  testWidgets('Dashboard shows month label key', (WidgetTester tester) async {
+    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    appRouter.go('/');
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('dashboard_month_label')), findsOneWidget);
+  });
+
+  testWidgets('Dashboard month label is present and shows current month', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    appRouter.go('/');
+    await tester.pumpAndSettle();
+
+    final label = tester.widget<Text>(find.byKey(const Key('dashboard_month_label')));
+    expect(label.data, contains('Tháng'));
+  });
+
+  testWidgets('Dashboard month changes when previous is tapped', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    appRouter.go('/');
+    await tester.pumpAndSettle();
+
+    final prevBtn = find.descendant(
+      of: find.byType(DashboardPage),
+      matching: find.byKey(const Key('month_selector_previous')),
+    );
+
+    final labelBefore = tester.widget<Text>(find.byKey(const Key('dashboard_month_label')));
+    final labelBeforeData = labelBefore.data;
+
+    await tester.tap(prevBtn.first);
+    await tester.pumpAndSettle();
+
+    final labelAfter = tester.widget<Text>(find.byKey(const Key('dashboard_month_label')));
+    expect(labelAfter.data, isNot(equals(labelBeforeData)));
+  });
+
+  testWidgets('Statistics page shows month label via goRouter', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    await tester.pumpAndSettle();
+
+    appRouter.go('/statistics');
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('statistics_month_label')), findsOneWidget);
+  });
+
+  testWidgets('Search does not crash dashboard', (WidgetTester tester) async {
+    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    await tester.pumpAndSettle();
+
+    appRouter.go('/transactions');
+    await tester.pumpAndSettle();
+
+    await tester.enterText(
+      find.byKey(const Key('transaction_filter_search_field')),
+      'lương',
+    );
+    await tester.pumpAndSettle();
+
+    appRouter.go('/');
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('dashboard_month_label')), findsOneWidget);
+    expect(find.text('Số dư hiện tại'), findsOneWidget);
   });
 }

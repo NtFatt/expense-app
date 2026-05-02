@@ -1,8 +1,12 @@
 import 'package:expense_app/features/transactions/data/in_memory_transaction_repository.dart';
 import 'package:expense_app/features/transactions/data/transaction_repository.dart';
+import 'package:expense_app/features/transactions/domain/monthly_transaction_summary.dart';
 import 'package:expense_app/features/transactions/domain/transaction_model.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+export 'package:expense_app/features/transactions/domain/monthly_transaction_summary.dart'
+    show CategoryExpenseSummary;
 
 final transactionRepositoryProvider = Provider<TransactionRepository>(
   (Ref ref) => _createDefaultTransactionRepository(),
@@ -192,20 +196,5 @@ class TransactionState {
 
   List<TransactionModel> recentTransactions({int limit = 5}) {
     return sortedTransactions.take(limit).toList();
-  }
-}
-
-class CategoryExpenseSummary {
-  const CategoryExpenseSummary({required this.category, required this.amount});
-
-  final String category;
-  final int amount;
-
-  double percentageOf(int totalExpense) {
-    if (totalExpense == 0) {
-      return 0;
-    }
-
-    return amount / totalExpense;
   }
 }

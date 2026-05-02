@@ -9,7 +9,7 @@
 - Current default repository: `InMemoryTransactionRepository`
 - Persistence status: Drift scaffolded but not enabled by default
 - Current validation status: `flutter pub get`, `flutter analyze`, `flutter test`, `flutter run -d chrome --web-run-headless --no-resident` PASS
-- Last updated: `2026-05-02` (Phase 7C — Transactions Filter UI)
+- Last updated: `2026-05-02` (Phase 7D — Monthly Dashboard + Statistics)
 
 ## 1. Status Legend
 
@@ -32,7 +32,7 @@
 | 4 | Riverpod Runtime State | `[x]` | Runtime state bằng Riverpod với add/delete/update dashboard | analyze/test pass | Default repo là in-memory |
 | 5 | Drift/SQLite Scaffold | `[L]` | Đã scaffold Drift table/database/repository | build_runner/analyze/test pass | Chưa bật persistence thật |
 | 6 | MVP UX Polish | `[x]` | Bottom nav, statistics, reports, polish UX các page chính | pub get/analyze/test/chrome pass | Chrome/web vẫn an toàn |
-| 7 | Filter/Search/Monthly View/Edit Transaction | `[~]` | Phase 7A–7C done; monthly dashboard/statistics pending | analyze/test/chrome pass for 7C | Next Phase 7D monthly dashboard/statistics |
+| 7 | Filter/Search/Monthly View/Edit Transaction | `[x]` | Phase 7A–7D done (edit, filter/search UI, monthly dashboard, monthly statistics) | analyze/test/chrome pass for 7D | Phase 7 COMPLETE; Next Phase 8 persistence planning |
 | 8 | Enable SQLite/Drift Persistence | `[ ]` | Chưa bật Drift mặc định | Chưa chạy | Phụ thuộc native QA |
 | 9 | CSV/PDF Export | `[ ]` | Chưa implement export thật | Chưa chạy | UI reports mới ở mức preparation |
 | 10 | Android Toolchain + APK Build | `[ ]` | Chưa xử lý Android toolchain/APK | Chưa chạy | Hiện chưa ưu tiên |
@@ -250,7 +250,7 @@
 
 ### Phase 7 — Filter/Search/Monthly View/Edit Transaction
 
-**Status:** `[~] IN PROGRESS` (7A done; 7B done; 7C done; 7D pending)
+**Status:** `[x] DONE` (7A done; 7B done; 7C done; 7D done)
 
 #### Phase 7A — Edit Transaction Foundation
 
@@ -358,24 +358,38 @@
 
 #### Phase 7D — Monthly Dashboard + Statistics
 
-**Status:** `[ ] NOT STARTED`  
-**Goal:** Make dashboard and statistics respect the selected month/filter.  
-**Scope:** Dashboard monthly totals, statistics monthly breakdown, filter-aware charts.  
+**Status:** `[x] DONE`  
+**Goal:** Make Dashboard and Statistics respect the selected month from `transactionFilterControllerProvider`, independent of search/type filters.  
+**Scope:** Month-only filter helper, monthly summary domain model, Dashboard monthly wiring, Statistics monthly wiring, reusable MonthSelector on all pages.  
+**Files touched:** `transaction_filters.dart` (+`filterTransactionsByMonth`), `monthly_transaction_summary.dart` (new: `MonthlyTransactionSummary`, `CategoryExpenseSummary`), `transaction_controller.dart` (removed duplicate `CategoryExpenseSummary`, added export), `dashboard_page.dart` (monthly totals, month selector, month-aware recent transactions), `statistics_page.dart` (monthly summary cards, chart, breakdown, top category), `widget_test.dart` (+6 Phase 7D widget tests).
 
 **Checklist:**
-- [ ] Dashboard shows monthly totals based on filter
-- [ ] Statistics page shows monthly breakdown
-- [ ] Charts respect selected month
-- [ ] No-data states for months with no transactions
+- [x] Dashboard shows monthly totals based on selected month
+- [x] Dashboard ignores search/type filters (uses month-only filter)
+- [x] Statistics page shows monthly breakdown
+- [x] Statistics ignores search/type filters (uses month-only filter)
+- [x] Charts respect selected month
+- [x] No-data states for months with no transactions
+- [x] Reuse MonthSelector on Dashboard and Statistics
+- [x] Add tests for monthly dashboard/statistics
 
 **Validation:**
-- [ ] `flutter analyze`
-- [ ] `flutter test`
-- [ ] `flutter run -d chrome`
-- [ ] Manual monthly view verification
+- [x] `flutter analyze`
+- [x] `flutter test`
+- [x] `flutter run -d chrome --web-run-headless --no-resident`
+
+**Notes:**
+- `filterTransactionsByMonth()` added to `transaction_filters.dart` — month-only, no type/search.
+- `MonthlyTransactionSummary` created in domain layer with `totalIncome`, `totalExpense`, `balance`, `recentTransactions`, `expenseByCategory`, `expenseCategorySummaries`, `topExpenseCategory`.
+- `CategoryExpenseSummary` moved from `transaction_controller.dart` to `monthly_transaction_summary.dart` and re-exported.
+- Dashboard: uses month-only filter, shows monthly balance/income/expense, MonthSelector, month-aware recent transactions.
+- Statistics: uses month-only filter, shows monthly summary cards, chart, breakdown, top category.
+- Phase 7A/7B/7C TransactionsPage filter (month+type+search) remains intact.
+- Drift remains scaffolded but not enabled by default.
+- Phase 7 is now complete.
 
 **Next step:**
-- Wire monthly filter to dashboard and statistics.
+- Phase 8 — Enable SQLite/Drift Persistence.
 
 ### Phase 8 — Enable SQLite/Drift Persistence
 
@@ -530,6 +544,9 @@
 | 2026-05-02 | `flutter analyze` | PASS | Phase 7C: MonthSelector, TransactionFilterBar, FilteredTransactionsSummary, TransactionsPage wired filter |
 | 2026-05-02 | `flutter test` | PASS | Phase 7C: 49 tests total (44 original + 5 new Phase 7C widget tests) |
 | 2026-05-02 | `flutter run -d chrome --web-run-headless --no-resident` | PASS | Phase 7C: Chrome smoke pass after filter UI wiring |
+| 2026-05-02 | `flutter analyze` | PASS | Phase 7D: `filterTransactionsByMonth`, `MonthlyTransactionSummary`, monthly Dashboard/Statistics wiring |
+| 2026-05-02 | `flutter test` | PASS | Phase 7D: 55 tests total (49 original + 6 new Phase 7D widget tests) |
+| 2026-05-02 | `flutter run -d chrome --web-run-headless --no-resident` | PASS | Phase 7D: Chrome smoke pass; Dashboard/Statistics monthly integration working |
 
 ## 5. Current Risks / Technical Notes
 
@@ -537,20 +554,19 @@
 - Drift scaffold đã có nhưng chưa bật default repository.
 - Web/Chrome hiện an toàn vì dùng `InMemoryTransactionRepository`.
 - Export CSV/PDF/backup mới là UI, chưa implement thật.
-- In-memory data mất khi reload app.
+- In-memory data mất khi reload app (persistence pending Phase 8).
+- Dashboard và Statistics hiện dùng monthly view nhưng vẫn in-memory (sẽ persist sau Phase 8).
 - Cần commit sau mỗi phase pass validation.
-- Dashboard and Statistics still show all-time totals until Phase 7D is implemented.
-- Filter state is currently wired to TransactionsPage only.
 
 ## 6. Next Actions
 
 ### Immediate Next Step
 
-- Start Phase 7D: Wire monthly filter to dashboard and statistics — make dashboard totals and statistics charts respect the selected month from `transactionFilterControllerProvider`.
+- Start Phase 8 planning: Enable SQLite/Drift Persistence safely on native targets while keeping web fallback safe.
 
 ### Recommended Git Commit
 
 ```powershell
 git add .
-git commit -m "feat(transactions): wire filter UI to transactions page"
+git commit -m "feat(transactions): add monthly dashboard and statistics"
 ```
