@@ -21,6 +21,17 @@ class DriftTransactionRepository implements TransactionRepository {
   }
 
   @override
+  Future<void> updateTransaction(TransactionModel transaction) async {
+    final int updatedRows = await _database.updateTransaction(
+      _mapModelToCompanion(transaction),
+    );
+
+    if (updatedRows == 0) {
+      throw StateError('Transaction not found: ${transaction.id}');
+    }
+  }
+
+  @override
   Future<void> deleteTransaction(String id) async {
     await _database.deleteTransactionById(id);
   }

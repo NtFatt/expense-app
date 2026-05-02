@@ -1,4 +1,5 @@
 import 'package:expense_app/app/app.dart';
+import 'package:expense_app/app/router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -24,7 +25,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Tổng số giao dịch'), findsOneWidget);
-    expect(find.byKey(const Key('transactions_add_transaction_fab')), findsOneWidget);
+    expect(
+      find.byKey(const Key('transactions_add_transaction_fab')),
+      findsOneWidget,
+    );
   });
 
   testWidgets('Tap add transaction opens transaction form', (
@@ -45,5 +49,34 @@ void main() {
       find.byKey(const Key('add_transaction_submit_button')),
       findsOneWidget,
     );
+  });
+
+  testWidgets('Tap edit transaction opens edit form with seeded data', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    appRouter.go('/transactions');
+    await tester.pumpAndSettle();
+
+    await tester.ensureVisible(
+      find.byKey(const Key('edit_transaction_button_seed_income_salary')),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const Key('edit_transaction_button_seed_income_salary')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sửa giao dịch'), findsOneWidget);
+    expect(
+      find.byKey(const Key('edit_transaction_amount_field')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('edit_transaction_submit_button')),
+      findsOneWidget,
+    );
+    expect(find.text('Cập nhật giao dịch'), findsOneWidget);
   });
 }

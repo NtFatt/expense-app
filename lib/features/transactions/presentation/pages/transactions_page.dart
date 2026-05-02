@@ -109,14 +109,30 @@ class TransactionsPage extends ConsumerWidget {
                     in data.sortedTransactions)
                   TransactionTile(
                     transaction: transaction,
-                    trailing: IconButton(
-                      tooltip: 'Xóa giao dịch',
-                      onPressed: () =>
-                          _deleteTransaction(context, ref, transaction),
-                      icon: const Icon(
-                        Icons.delete_outline_rounded,
-                        color: Color(0xFFDC2626),
-                      ),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        IconButton(
+                          key: Key('edit_transaction_button_${transaction.id}'),
+                          tooltip: 'Sửa giao dịch',
+                          onPressed: () => context.push(
+                            '/transactions/${transaction.id}/edit',
+                          ),
+                          icon: const Icon(
+                            Icons.edit_outlined,
+                            color: Color(0xFF2563EB),
+                          ),
+                        ),
+                        IconButton(
+                          tooltip: 'Xóa giao dịch',
+                          onPressed: () =>
+                              _deleteTransaction(context, ref, transaction),
+                          icon: const Icon(
+                            Icons.delete_outline_rounded,
+                            color: Color(0xFFDC2626),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
             ],

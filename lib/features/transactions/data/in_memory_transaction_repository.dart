@@ -19,6 +19,19 @@ class InMemoryTransactionRepository implements TransactionRepository {
   }
 
   @override
+  Future<void> updateTransaction(TransactionModel transaction) async {
+    final int transactionIndex = _transactions.indexWhere(
+      (TransactionModel item) => item.id == transaction.id,
+    );
+
+    if (transactionIndex == -1) {
+      throw StateError('Transaction not found: ${transaction.id}');
+    }
+
+    _transactions[transactionIndex] = transaction;
+  }
+
+  @override
   Future<void> deleteTransaction(String id) async {
     _transactions.removeWhere(
       (TransactionModel transaction) => transaction.id == id,

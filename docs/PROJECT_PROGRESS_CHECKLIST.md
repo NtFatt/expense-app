@@ -9,7 +9,7 @@
 - Current default repository: `InMemoryTransactionRepository`
 - Persistence status: Drift scaffolded but not enabled by default
 - Current validation status: `flutter pub get`, `flutter analyze`, `flutter test`, `flutter run -d chrome --web-run-headless --no-resident` PASS
-- Last updated: `2026-05-02`
+- Last updated: `2026-05-02` (Phase 7B — Filter/Search Controller)
 
 ## 1. Status Legend
 
@@ -32,7 +32,7 @@
 | 4 | Riverpod Runtime State | `[x]` | Runtime state bằng Riverpod với add/delete/update dashboard | analyze/test pass | Default repo là in-memory |
 | 5 | Drift/SQLite Scaffold | `[L]` | Đã scaffold Drift table/database/repository | build_runner/analyze/test pass | Chưa bật persistence thật |
 | 6 | MVP UX Polish | `[x]` | Bottom nav, statistics, reports, polish UX các page chính | pub get/analyze/test/chrome pass | Chrome/web vẫn an toàn |
-| 7 | Filter/Search/Monthly View/Edit Transaction | `[ ]` | Chưa bắt đầu | Chưa chạy | Phase tiếp theo đề xuất |
+| 7 | Filter/Search/Monthly View/Edit Transaction | `[~]` | Phase 7A and 7B done; filter UI/monthly dashboard/statistics pending | analyze/test/chrome pass for 7B | Next Phase 7C transactions filter UI |
 | 8 | Enable SQLite/Drift Persistence | `[ ]` | Chưa bật Drift mặc định | Chưa chạy | Phụ thuộc native QA |
 | 9 | CSV/PDF Export | `[ ]` | Chưa implement export thật | Chưa chạy | UI reports mới ở mức preparation |
 | 10 | Android Toolchain + APK Build | `[ ]` | Chưa xử lý Android toolchain/APK | Chưa chạy | Hiện chưa ưu tiên |
@@ -250,33 +250,118 @@
 
 ### Phase 7 — Filter/Search/Monthly View/Edit Transaction
 
-**Status:** `[ ] NOT STARTED`  
-**Goal:** Improve transaction management and make app closer to production MVP.  
-**Scope:** Filter bar, month selector, search, edit route/form và áp dụng filter cho dashboard/statistics.  
-**Files touched/expected:** `features/transactions/presentation/pages/edit_transaction_page.dart`, `features/transactions/presentation/widgets/transaction_filter_bar.dart`, `features/transactions/presentation/controllers/transaction_filter_controller.dart` nếu cần.
+**Status:** `[~] IN PROGRESS` (7A done; 7B done; 7C/7D pending)
+
+#### Phase 7A — Edit Transaction Foundation
+
+**Status:** `[x] DONE`  
+**Goal:** Add edit transaction flow and extract shared form component to avoid duplication.  
+**Scope:** Edit route, `EditTransactionPage`, shared `TransactionForm`, `updateTransaction` in controller, repository interface updates, widget test.  
+**Files touched:** `router.dart` (+edit route `/transactions/:id/edit`), `edit_transaction_page.dart` (new), `transaction_form.dart` (new shared form), `transaction_controller.dart` (+`updateTransaction`, `transactionById`), `add_transaction_page.dart` (refactored to use shared form), `in_memory_transaction_repository.dart` (+`updateTransaction`), `drift_transaction_repository.dart` (+`updateTransaction`), `transaction_repository.dart` (+`updateTransaction` abstract method), `widget_test.dart` (+edit navigation test).
 
 **Checklist:**
-- [ ] Add month selector
-- [ ] Filter transactions by month
-- [ ] Filter by type: all / income / expense
-- [ ] Search by category/note/title
-- [ ] Add edit transaction route
-- [ ] Add edit transaction form
-- [ ] Reuse `AddTransactionPage` logic if clean
-- [ ] Dashboard respects selected month
-- [ ] Statistics respects selected month
-- [ ] Add tests for filter/search/edit
+- [x] Add edit transaction route `/transactions/:id/edit`
+- [x] Create `EditTransactionPage` with loading/error/empty states
+- [x] Create shared `TransactionForm` widget (reused by add and edit)
+- [x] Add `updateTransaction` to `TransactionRepository` contract
+- [x] Add `updateTransaction` to `InMemoryTransactionRepository`
+- [x] Add `updateTransaction` to `DriftTransactionRepository`
+- [x] Add `updateTransaction` to `TransactionController`
+- [x] Add `transactionById` helper to `TransactionState`
+- [x] Refactor `AddTransactionPage` to use shared `TransactionForm`
+- [x] Add widget test for edit navigation
+- [x] `flutter analyze` pass
+- [x] `flutter test` pass
+- [x] `flutter run -d chrome` smoke pass
+
+**Validation:**
+- [x] `flutter analyze`
+- [x] `flutter test`
+- [x] `flutter run -d chrome --web-run-headless --no-resident`
+
+**Notes:**
+- `TransactionForm` is now shared between add and edit, eliminating code duplication.
+- Form pre-fills with existing transaction data on edit.
+- In-memory update works correctly; Drift `updateTransaction` is scaffolded for when persistence is enabled.
+- Phase 7A scope limited to edit foundation; filter/search/monthly view are Phase 7B/7C/7D.
+
+**Next step:**
+- Phase 7C — Transactions Filter UI.
+
+#### Phase 7B — Filter/Search Controller
+
+**Status:** `[x] DONE`  
+**Goal:** Add dedicated filter/search/month state controller to support monthly view and type filtering.  
+**Scope:** Filter state model, filter controller, month selector, type filter (all/income/expense), search query.  
+**Files touched:** `transaction_filters.dart` (new: `TransactionTypeFilter` enum, `TransactionFilterState`, helpers, `applyTransactionFilters`), `transaction_filter_controller.dart` (new: `TransactionFilterController`, `transactionFilterControllerProvider`).
+
+**Checklist:**
+- [x] Design `TransactionFilterState`
+- [x] Create `TransactionFilterController`
+- [x] Create `TransactionTypeFilter`: all / income / expense
+- [x] Create month selection state (`normalizeMonth`, `isSameMonth`)
+- [x] Add `applyTransactionFilters()`
+- [x] Filter by month
+- [x] Filter by type
+- [x] Search by category/note/displayTitle
+- [x] Add tests for filter logic
+
+**Validation:**
+- [x] `flutter analyze`
+- [x] `flutter test`
+- [x] `flutter run -d chrome --web-run-headless --no-resident`
+
+**Notes:**
+- Filter logic is domain-level and fully testable (30 filter tests + 10 controller tests).
+- UI wiring is intentionally deferred to Phase 7C.
+- Dashboard/statistics monthly integration is intentionally deferred to Phase 7D.
+- Drift remains scaffolded but not enabled by default.
+- `applyTransactionFilters` is a pure function that does not mutate the input list.
+
+**Next step:**
+- Phase 7C — Transactions Filter UI.
+
+#### Phase 7C — Transactions Filter UI
+
+**Status:** `[ ] NOT STARTED`  
+**Goal:** Wire filter state to UI with month selector, type chips, and search bar.  
+**Scope:** Filter bar widget, month selector widget, type filter chips, search input, wiring to controller.  
+
+**Checklist:**
+- [ ] Create filter bar widget
+- [ ] Wire month selector
+- [ ] Wire type filter chips
+- [ ] Wire search input
+- [ ] Show active filter count
 
 **Validation:**
 - [ ] `flutter analyze`
 - [ ] `flutter test`
 - [ ] `flutter run -d chrome`
 
-**Notes:**
-- Nên làm phase này trước khi bật persistence thật để UX data management ổn định.
+**Next step:**
+- Connect filter UI to controller.
+
+#### Phase 7D — Monthly Dashboard + Statistics
+
+**Status:** `[ ] NOT STARTED`  
+**Goal:** Make dashboard and statistics respect the selected month/filter.  
+**Scope:** Dashboard monthly totals, statistics monthly breakdown, filter-aware charts.  
+
+**Checklist:**
+- [ ] Dashboard shows monthly totals based on filter
+- [ ] Statistics page shows monthly breakdown
+- [ ] Charts respect selected month
+- [ ] No-data states for months with no transactions
+
+**Validation:**
+- [ ] `flutter analyze`
+- [ ] `flutter test`
+- [ ] `flutter run -d chrome`
+- [ ] Manual monthly view verification
 
 **Next step:**
-- Design filter state shape and decide whether it lives in a dedicated controller.
+- Wire monthly filter to dashboard and statistics.
 
 ### Phase 8 — Enable SQLite/Drift Persistence
 
@@ -421,6 +506,12 @@
 | 2026-05-02 | `flutter run -d chrome` | PASS | Previously validated during MVP setup/phases |
 | 2026-05-02 | `flutter run -d chrome --web-run-headless --no-resident` | PASS | Latest Chrome smoke run passed after Phase 6 |
 | 2026-05-02 | `dart run build_runner build --delete-conflicting-outputs` | PASS | Drift code generation passed in Phase 5; not rerun in Phase 6 because schema did not change |
+| 2026-05-02 | `flutter analyze` | PASS | Phase 7A: shared `TransactionForm`, `EditTransactionPage`, `updateTransaction` controller, edit route |
+| 2026-05-02 | `flutter test` | PASS | Phase 7A: edit navigation widget test added and passes |
+| 2026-05-02 | `flutter run -d chrome --web-run-headless --no-resident` | PASS | Phase 7A: Chrome smoke remained green after refactoring add page to use shared form |
+| 2026-05-02 | `flutter analyze` | PASS | Phase 7B: `transaction_filters.dart`, `transaction_filter_controller.dart`, filter/controller tests |
+| 2026-05-02 | `flutter test` | PASS | Phase 7B: 44 tests total (30 filter logic + 10 controller + 4 widget) |
+| 2026-05-02 | `flutter run -d chrome --web-run-headless --no-resident` | PASS | Phase 7B: Chrome smoke pass; dashboard, transactions, add, edit all intact |
 
 ## 5. Current Risks / Technical Notes
 
@@ -430,20 +521,18 @@
 - Export CSV/PDF/backup mới là UI, chưa implement thật.
 - In-memory data mất khi reload app.
 - Cần commit sau mỗi phase pass validation.
+- Phase 7B provides logic only; UI wiring remains pending in Phase 7C.
 
 ## 6. Next Actions
 
 ### Immediate Next Step
 
-- Commit current Phase 6 state.
-- Start Phase 7: Filter/Search/Monthly View/Edit Transaction.
+- Start Phase 7C: Wire filter state to UI with month selector, type chips, and search bar on the transactions page.
 
 ### Recommended Git Commit
 
 ```powershell
 git status
 git add .
-git commit -m "docs: add project progress checklist"
+git commit -m "feat(transactions): add filter search controller"
 ```
-git add .
-git commit -m "feat: polish expense app mvp navigation and statistics"

@@ -29,6 +29,13 @@ class AppDatabase extends _$AppDatabase {
     return into(transactions).insert(transaction);
   }
 
+  Future<int> updateTransaction(TransactionsCompanion transaction) {
+    return (update(
+          transactions,
+        )..where((Transactions table) => table.id.equals(transaction.id.value)))
+        .write(transaction);
+  }
+
   Future<int> deleteTransactionById(String id) {
     return (delete(
       transactions,

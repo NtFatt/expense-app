@@ -30,6 +30,17 @@ class TransactionController extends AsyncNotifier<TransactionState> {
     });
   }
 
+  Future<void> updateTransaction(TransactionModel transaction) async {
+    state = const AsyncLoading<TransactionState>();
+    state = await AsyncValue.guard(() async {
+      final TransactionRepository repository = ref.read(
+        transactionRepositoryProvider,
+      );
+      await repository.updateTransaction(transaction);
+      return _loadTransactions();
+    });
+  }
+
   Future<void> deleteTransaction(String id) async {
     state = const AsyncLoading<TransactionState>();
     state = await AsyncValue.guard(() async {
@@ -117,6 +128,16 @@ class TransactionState {
   bool get isEmpty => transactions.isEmpty;
 
   int get totalTransactions => transactions.length;
+
+  TransactionModel? transactionById(String id) {
+    for (final TransactionModel transaction in transactions) {
+      if (transaction.id == id) {
+        return transaction;
+      }
+    }
+
+    return null;
+  }
 
   List<CategoryExpenseSummary> get expenseCategorySummaries {
     final Map<String, int> totalsByCategory = <String, int>{};
