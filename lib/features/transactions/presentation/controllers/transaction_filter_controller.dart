@@ -42,6 +42,13 @@ class TransactionFilterController extends Notifier<TransactionFilterState> {
     state = state.copyWith(searchQuery: '');
   }
 
+  void clearNonMonthFilters() {
+    state = state.copyWith(
+      typeFilter: TransactionTypeFilter.all,
+      searchQuery: '',
+    );
+  }
+
   void reset() {
     state = TransactionFilterState.initial();
   }

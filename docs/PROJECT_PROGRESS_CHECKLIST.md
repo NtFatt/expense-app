@@ -9,7 +9,7 @@
 - Current default repository: `InMemoryTransactionRepository`
 - Persistence status: Drift scaffolded but not enabled by default
 - Current validation status: `flutter pub get`, `flutter analyze`, `flutter test`, `flutter run -d chrome --web-run-headless --no-resident` PASS
-- Last updated: `2026-05-02` (Phase 7B — Filter/Search Controller)
+- Last updated: `2026-05-02` (Phase 7C — Transactions Filter UI)
 
 ## 1. Status Legend
 
@@ -32,7 +32,7 @@
 | 4 | Riverpod Runtime State | `[x]` | Runtime state bằng Riverpod với add/delete/update dashboard | analyze/test pass | Default repo là in-memory |
 | 5 | Drift/SQLite Scaffold | `[L]` | Đã scaffold Drift table/database/repository | build_runner/analyze/test pass | Chưa bật persistence thật |
 | 6 | MVP UX Polish | `[x]` | Bottom nav, statistics, reports, polish UX các page chính | pub get/analyze/test/chrome pass | Chrome/web vẫn an toàn |
-| 7 | Filter/Search/Monthly View/Edit Transaction | `[~]` | Phase 7A and 7B done; filter UI/monthly dashboard/statistics pending | analyze/test/chrome pass for 7B | Next Phase 7C transactions filter UI |
+| 7 | Filter/Search/Monthly View/Edit Transaction | `[~]` | Phase 7A–7C done; monthly dashboard/statistics pending | analyze/test/chrome pass for 7C | Next Phase 7D monthly dashboard/statistics |
 | 8 | Enable SQLite/Drift Persistence | `[ ]` | Chưa bật Drift mặc định | Chưa chạy | Phụ thuộc native QA |
 | 9 | CSV/PDF Export | `[ ]` | Chưa implement export thật | Chưa chạy | UI reports mới ở mức preparation |
 | 10 | Android Toolchain + APK Build | `[ ]` | Chưa xử lý Android toolchain/APK | Chưa chạy | Hiện chưa ưu tiên |
@@ -250,7 +250,7 @@
 
 ### Phase 7 — Filter/Search/Monthly View/Edit Transaction
 
-**Status:** `[~] IN PROGRESS` (7A done; 7B done; 7C/7D pending)
+**Status:** `[~] IN PROGRESS` (7A done; 7B done; 7C done; 7D pending)
 
 #### Phase 7A — Edit Transaction Foundation
 
@@ -323,24 +323,38 @@
 
 #### Phase 7C — Transactions Filter UI
 
-**Status:** `[ ] NOT STARTED`  
-**Goal:** Wire filter state to UI with month selector, type chips, and search bar.  
-**Scope:** Filter bar widget, month selector widget, type filter chips, search input, wiring to controller.  
+**Status:** `[x] DONE`  
+**Goal:** Wire filter state to UI with month selector, type chips, and search bar on the transactions page.  
+**Scope:** Filter bar widget, month selector widget, type filter chips, search input, wiring to controller, filtered summary panel.  
+**Files touched:** `transaction_filter_bar.dart` (new: `TransactionFilterBar` with search + type chips + month selector), `month_selector.dart` (new: `MonthSelector` with prev/next buttons and month label), `filtered_transactions_summary.dart` (new: filtered totals for summary panel), `transactions_page.dart` (refactored: wired `transactionFilterControllerProvider` and `applyTransactionFilters`), `transaction_filter_controller.dart` (+`clearNonMonthFilters`), `widget_test.dart` (+5 Phase 7C widget tests).
 
 **Checklist:**
-- [ ] Create filter bar widget
-- [ ] Wire month selector
-- [ ] Wire type filter chips
-- [ ] Wire search input
-- [ ] Show active filter count
+- [x] Create MonthSelector widget
+- [x] Create TransactionFilterBar widget
+- [x] Wire month selector
+- [x] Wire type filter chips
+- [x] Wire search input
+- [x] Show active filter count
+- [x] TransactionsPage uses filtered transactions
+- [x] Summary panel uses filtered transactions
+- [x] Empty state distinguishes no data vs no matching result
+- [x] Add tests for filter/search UI
 
 **Validation:**
-- [ ] `flutter analyze`
-- [ ] `flutter test`
-- [ ] `flutter run -d chrome`
+- [x] `flutter analyze`
+- [x] `flutter test`
+- [x] `flutter run -d chrome --web-run-headless --no-resident`
+
+**Notes:**
+- `FilteredTransactionsSummary` widget created to avoid breaking Dashboard's use of `TransactionSummaryPanel`.
+- Month label uses static Vietnamese month names (avoids `initializeDateFormatting` requirement in tests).
+- Filter UI is wired only on TransactionsPage; Dashboard and Statistics monthly integration remain Phase 7D.
+- `clearNonMonthFilters()` added to controller to reset search + type without resetting month.
+- All 49 tests pass (44 original + 5 new Phase 7C widget tests).
+- Drift remains scaffolded but not enabled by default.
 
 **Next step:**
-- Connect filter UI to controller.
+- Phase 7D — Monthly Dashboard + Statistics.
 
 #### Phase 7D — Monthly Dashboard + Statistics
 
@@ -512,6 +526,10 @@
 | 2026-05-02 | `flutter analyze` | PASS | Phase 7B: `transaction_filters.dart`, `transaction_filter_controller.dart`, filter/controller tests |
 | 2026-05-02 | `flutter test` | PASS | Phase 7B: 44 tests total (30 filter logic + 10 controller + 4 widget) |
 | 2026-05-02 | `flutter run -d chrome --web-run-headless --no-resident` | PASS | Phase 7B: Chrome smoke pass; dashboard, transactions, add, edit all intact |
+| 2026-05-02 | Code review (no validation run) | PASS | Checklist accuracy confirmed: Phase 7C/7D UI not wired; `TransactionsPage` does not use `transactionFilterControllerProvider`; `DashboardPage` and `StatisticsPage` show all-time totals; `ReportsPage` shows all coming soon |
+| 2026-05-02 | `flutter analyze` | PASS | Phase 7C: MonthSelector, TransactionFilterBar, FilteredTransactionsSummary, TransactionsPage wired filter |
+| 2026-05-02 | `flutter test` | PASS | Phase 7C: 49 tests total (44 original + 5 new Phase 7C widget tests) |
+| 2026-05-02 | `flutter run -d chrome --web-run-headless --no-resident` | PASS | Phase 7C: Chrome smoke pass after filter UI wiring |
 
 ## 5. Current Risks / Technical Notes
 
@@ -521,18 +539,18 @@
 - Export CSV/PDF/backup mới là UI, chưa implement thật.
 - In-memory data mất khi reload app.
 - Cần commit sau mỗi phase pass validation.
-- Phase 7B provides logic only; UI wiring remains pending in Phase 7C.
+- Dashboard and Statistics still show all-time totals until Phase 7D is implemented.
+- Filter state is currently wired to TransactionsPage only.
 
 ## 6. Next Actions
 
 ### Immediate Next Step
 
-- Start Phase 7C: Wire filter state to UI with month selector, type chips, and search bar on the transactions page.
+- Start Phase 7D: Wire monthly filter to dashboard and statistics — make dashboard totals and statistics charts respect the selected month from `transactionFilterControllerProvider`.
 
 ### Recommended Git Commit
 
 ```powershell
-git status
 git add .
-git commit -m "feat(transactions): add filter search controller"
+git commit -m "feat(transactions): wire filter UI to transactions page"
 ```

@@ -79,4 +79,66 @@ void main() {
     );
     expect(find.text('Cập nhật giao dịch'), findsOneWidget);
   });
+
+  testWidgets('Transactions page shows filter UI elements', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    appRouter.go('/transactions');
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('transaction_filter_search_field')), findsOneWidget);
+    expect(find.byKey(const Key('month_selector_previous')), findsOneWidget);
+    expect(find.byKey(const Key('month_selector_next')), findsOneWidget);
+  });
+
+  testWidgets('Type filter chips are visible on transactions page', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    appRouter.go('/transactions');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Tất cả'), findsWidgets);
+    expect(find.text('Thu nhập'), findsWidgets);
+    expect(find.text('Chi tiêu'), findsWidgets);
+  });
+
+  testWidgets('Month selector label is visible on transactions page', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    appRouter.go('/transactions');
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('month_selector_label')), findsOneWidget);
+  });
+
+  testWidgets('Search field accepts text input', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    appRouter.go('/transactions');
+    await tester.pumpAndSettle();
+
+    final Finder searchField = find.byKey(const Key('transaction_filter_search_field'));
+    await tester.enterText(searchField, 'lương');
+    await tester.pumpAndSettle();
+
+    expect(find.text('lương'), findsOneWidget);
+  });
+
+  testWidgets('Add transaction FAB still works from transactions page', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    appRouter.go('/transactions');
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('transactions_add_transaction_fab')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('add_transaction_amount_field')), findsOneWidget);
+    expect(find.byKey(const Key('add_transaction_submit_button')), findsOneWidget);
+  });
 }

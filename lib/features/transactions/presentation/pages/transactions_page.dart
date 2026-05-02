@@ -1,7 +1,10 @@
+import 'package:expense_app/features/transactions/domain/transaction_filters.dart';
 import 'package:expense_app/features/transactions/domain/transaction_model.dart';
 import 'package:expense_app/features/transactions/presentation/controllers/transaction_controller.dart';
+import 'package:expense_app/features/transactions/presentation/controllers/transaction_filter_controller.dart';
 import 'package:expense_app/features/transactions/presentation/widgets/delete_transaction_dialog.dart';
-import 'package:expense_app/features/transactions/presentation/widgets/transaction_summary_panel.dart';
+import 'package:expense_app/features/transactions/presentation/widgets/filtered_transactions_summary.dart';
+import 'package:expense_app/features/transactions/presentation/widgets/transaction_filter_bar.dart';
 import 'package:expense_app/features/transactions/presentation/widgets/transaction_tile.dart';
 import 'package:expense_app/shared/widgets/app_bottom_navigation.dart';
 import 'package:expense_app/shared/widgets/app_scaffold.dart';
@@ -54,6 +57,12 @@ class TransactionsPage extends ConsumerWidget {
     final AsyncValue<TransactionState> transactionState = ref.watch(
       transactionControllerProvider,
     );
+    final TransactionFilterState filter = ref.watch(
+      transactionFilterControllerProvider,
+    );
+    final TransactionFilterController filterCtrl = ref.read(
+      transactionFilterControllerProvider.notifier,
+    );
 
     return AppScaffold(
       title: 'Giao dịch',
@@ -82,11 +91,27 @@ class TransactionsPage extends ConsumerWidget {
           );
         },
         data: (TransactionState data) {
+          final List<TransactionModel> filteredTransactions =
+              applyTransactionFilters(
+            transactions: data.transactions,
+            filter: filter,
+          );
+
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TransactionSummaryPanel(state: data),
-              const SizedBox(height: 24),
+              TransactionFilterBar(
+                filter: filter,
+                onPreviousMonth: filterCtrl.previousMonth,
+                onNextMonth: filterCtrl.nextMonth,
+                onTypeChanged: filterCtrl.setTypeFilter,
+                onSearchChanged: filterCtrl.setSearchQuery,
+                onClearSearch: filterCtrl.clearSearch,
+                onClearNonMonthFilters: filterCtrl.clearNonMonthFilters,
+              ),
+              const SizedBox(height: 16),
+              FilteredTransactionsSummary(transactions: filteredTransactions),
+              const SizedBox(height: 20),
               SectionHeader(
                 title: 'Danh sách giao dịch',
                 actionLabel: data.isEmpty ? null : 'Thêm mới',
@@ -104,9 +129,18 @@ class TransactionsPage extends ConsumerWidget {
                   actionLabel: 'Thêm giao dịch',
                   onActionPressed: () => context.push('/transactions/new'),
                 )
+              else if (filteredTransactions.isEmpty)
+                EmptyState(
+                  title: 'Không tìm thấy giao dịch phù hợp',
+                  message:
+                      'Thử đổi tháng, loại giao dịch hoặc từ khóa tìm kiếm.',
+                  icon: Icons.search_off_rounded,
+                  actionLabel: 'Xóa bộ lọc',
+                  onActionPressed: filterCtrl.clearNonMonthFilters,
+                )
               else
                 for (final TransactionModel transaction
-                    in data.sortedTransactions)
+                    in filteredTransactions)
                   TransactionTile(
                     transaction: transaction,
                     trailing: Row(
