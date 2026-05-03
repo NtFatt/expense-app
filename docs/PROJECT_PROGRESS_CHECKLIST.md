@@ -9,7 +9,7 @@
 - Current default repository: `InMemoryTransactionRepository`
 - Persistence status: Drift scaffolded but not enabled by default
 - Current validation status: `flutter pub get`, `flutter analyze`, `flutter test`, `flutter run -d chrome --web-run-headless --no-resident` PASS
-- Last updated: `2026-05-02` (Phase 7D confirmed committed at fd3f5b9; 7D all-time dashboard/statistics now monthly; Phase 8 not started)
+- Last updated: `2026-05-03` (Phase 8A completed: persistence readiness audit; 8A report created; 8B repository switching pending)
 
 ## 1. Status Legend
 
@@ -33,7 +33,7 @@
 | 5 | Drift/SQLite Scaffold | `[L]` | Đã scaffold Drift table/database/repository | build_runner/analyze/test pass | Chưa bật persistence thật |
 | 6 | MVP UX Polish | `[x]` | Bottom nav, statistics, reports, polish UX các page chính | pub get/analyze/test/chrome pass | Chrome/web vẫn an toàn |
 | 7 | Filter/Search/Monthly View/Edit Transaction | `[x]` | Phase 7A–7D done (edit, filter/search UI, monthly dashboard, monthly statistics) | analyze/test/chrome pass for 7D | Phase 7 COMPLETE; Next Phase 8 persistence planning |
-| 8 | Enable SQLite/Drift Persistence | `[ ]` | Chưa bật Drift mặc định | Chưa chạy | Phụ thuộc native QA |
+| 8 | Enable SQLite/Drift Persistence | `[~]` | Phase 8A readiness audit completed; repository switching pending | analyze/test/chrome pass for 8A | Phase 8A audit done; 8B repository switching next |
 | 9 | CSV/PDF Export | `[ ]` | Chưa implement export thật | Chưa chạy | UI reports mới ở mức preparation |
 | 10 | Android Toolchain + APK Build | `[ ]` | Chưa xử lý Android toolchain/APK | Chưa chạy | Hiện chưa ưu tiên |
 | 11 | Final QA + Demo Script | `[ ]` | Chưa làm checklist demo cuối | Chưa chạy | Để sau MVP ổn định |
@@ -393,33 +393,92 @@
 
 ### Phase 8 — Enable SQLite/Drift Persistence
 
-**Status:** `[ ] NOT STARTED`  
-**Goal:** Switch from runtime memory state to real local persistence on native targets.  
-**Scope:** Repository switching strategy, native QA, persistence after restart, migration handling.  
-**Files touched/expected:** `lib/features/transactions/presentation/controllers/transaction_controller.dart`, repository providers, `lib/core/database/app_database.dart`, native-friendly startup wiring if needed.
+**Status:** `[~] IN PROGRESS`
+**Goal:** Switch from runtime memory state to real local persistence on native targets while keeping web fallback safe.
+
+#### Phase 8A — Persistence Readiness Audit
+
+**Status:** `[x] DONE`
+**Goal:** Audit Drift schema, repository contract, mapping, provider wiring, and web/native safety before enabling persistence.
 
 **Checklist:**
-- [ ] Fix Android toolchain or choose Windows target for native persistence QA
-- [ ] Decide repository switching strategy
-- [ ] Keep web fallback safe
-- [ ] Enable Drift repository on native
-- [ ] Verify add transaction persists after app restart
-- [ ] Verify delete persists after app restart
-- [ ] Add migration versioning
-- [ ] Add repository tests if possible
+- [x] Audit Drift dependencies
+- [x] Audit transactions table schema
+- [x] Audit AppDatabase and generated code
+- [x] Audit TransactionRepository contract
+- [x] Audit InMemoryTransactionRepository
+- [x] Audit DriftTransactionRepository
+- [x] Audit TransactionModel mapping
+- [x] Audit provider wiring and default repository
+- [x] Audit web/native safety
+- [x] Check Flutter devices/doctor
+- [x] Create `docs/PHASE_8A_PERSISTENCE_READINESS_AUDIT.md`
+- [x] Run validation
+
+**Validation:**
+- [x] `flutter analyze` — PASS
+- [x] `flutter test` — PASS (55 tests)
+- [x] `flutter run -d chrome --web-run-headless --no-resident` — PASS
+- [x] `flutter devices` — PASS (Windows, Chrome, Edge available)
+- [x] `flutter doctor` — WARN (Android toolchain incomplete, expected)
+
+**Notes:**
+- Default repository remains `InMemoryTransactionRepository`.
+- Drift remains scaffolded but not enabled by default.
+- Phase 8B will implement repository switching — a one-line change in `_createDefaultTransactionRepository()`.
+- Web is fully protected by `kIsWeb` guard and `UnsupportedError` in `_openConnection()`.
+- Windows target is available for native persistence QA in Phase 8C.
+- All 8 fields in `TransactionModel` map correctly to Drift table columns.
+- No schema migration needed.
+- Full audit report at `docs/PHASE_8A_PERSISTENCE_READINESS_AUDIT.md`.
+
+**Next step:**
+- Phase 8B — Repository Switching Strategy.
+
+#### Phase 8B — Repository Switching Strategy
+
+**Status:** `[ ] NOT STARTED`
+
+**Checklist:**
+- [ ] Update `_createDefaultTransactionRepository()` native branch to return `DriftTransactionRepository(AppDatabase())`
+- [ ] Keep `kIsWeb` branch returning `InMemoryTransactionRepository`
+- [ ] Optionally harden `TransactionType.fromName` with `orElse` fallback
+- [ ] Validate Chrome remains green
+- [ ] Validate Windows native build path
+- [ ] `flutter analyze` and `flutter test` pass
 
 **Validation:**
 - [ ] `flutter analyze`
 - [ ] `flutter test`
-- [ ] `flutter run -d windows` or `flutter run -d android`
-- [ ] restart app persistence check
+- [ ] `flutter run -d chrome --web-run-headless --no-resident`
+- [ ] `flutter run -d windows`
 
-**Notes:**
-- Do not enable Drift default if Chrome/web breaks.
-- Use `kIsWeb` guard or explicit repository provider strategy.
+#### Phase 8C — Native Persistence QA
 
-**Next step:**
-- Finish Phase 7 first so data UX does not shift again after persistence rollout.
+**Status:** `[ ] NOT STARTED`
+
+**Checklist:**
+- [ ] Run app on Windows native target
+- [ ] Add transaction and restart app
+- [ ] Verify add persists
+- [ ] Verify edit persists
+- [ ] Verify delete persists
+- [ ] Verify monthly dashboard/statistics after restart
+
+**Validation:**
+- [ ] `flutter run -d windows` — persistence smoke test
+- [ ] Restart app and verify data survives
+
+#### Phase 8D — Hardening, Migration, Documentation
+
+**Status:** `[ ] NOT STARTED`
+
+**Checklist:**
+- [ ] Document migration strategy
+- [ ] Harden repository error handling
+- [ ] Add persistence tests if feasible
+- [ ] Update README/docs
+- [ ] Mark Phase 8 DONE only after native persistence is verified
 
 ### Phase 9 — CSV/PDF Export
 
@@ -546,27 +605,31 @@
 | 2026-05-02 | `flutter run -d chrome --web-run-headless --no-resident` | PASS | Phase 7C: Chrome smoke pass after filter UI wiring |
 | 2026-05-02 | `flutter analyze` | PASS | Phase 7D: `filterTransactionsByMonth`, `MonthlyTransactionSummary`, monthly Dashboard/Statistics wiring |
 | 2026-05-02 | `flutter test` | PASS | Phase 7D: 55 tests total (49 original + 6 new Phase 7D widget tests) |
-| 2026-05-02 | `flutter run -d chrome --web-run-headless --no-resident` | PASS | Phase 7D: Chrome smoke pass; Dashboard/Statistics monthly integration working |
+| 2026-05-03 | `flutter analyze` | PASS | Phase 8A persistence readiness audit |
+| 2026-05-03 | `flutter test` | PASS | Phase 8A: 55 tests pass (44 filter/controller + 11 widget) |
+| 2026-05-03 | `flutter run -d chrome --web-run-headless --no-resident` | PASS | Phase 8A: Chrome smoke pass; web fallback remains safe |
+| 2026-05-03 | `flutter devices` | PASS | Phase 8A: Windows, Chrome, Edge available |
+| 2026-05-03 | `flutter doctor` | WARN | Phase 8A: Android toolchain incomplete (expected; Windows target recommended for 8C) |
 
 ## 5. Current Risks / Technical Notes
 
-- Android toolchain chưa hoàn chỉnh: thiếu cmdline-tools/licenses.
-- Drift scaffold đã có nhưng chưa bật default repository.
+- Android toolchain chưa hoàn chỉnh: thiếu cmdline-tools/licenses. Dùng Windows target cho Phase 8C QA.
+- Drift scaffold đã có và sẵn sàng, chưa bật default repository.
+- Phase 8A đã hoàn thành audit: infrastructure sẵn sàng cho Phase 8B switching.
 - Web/Chrome hiện an toàn vì dùng `InMemoryTransactionRepository`.
 - Export CSV/PDF/backup mới là UI, chưa implement thật.
 - In-memory data mất khi reload app (persistence pending Phase 8).
 - Dashboard và Statistics hiện dùng monthly view nhưng vẫn in-memory (sẽ persist sau Phase 8).
-- Cần commit sau mỗi phase pass validation.
 
 ## 6. Next Actions
 
 ### Immediate Next Step
 
-- Start Phase 8 planning: Enable SQLite/Drift Persistence safely on native targets while keeping web fallback safe.
+- Start Phase 8B: Repository Switching Strategy — update `_createDefaultTransactionRepository()` native branch to return `DriftTransactionRepository(AppDatabase())`.
 
 ### Recommended Git Commit
 
 ```powershell
 git add .
-git commit -m "feat(transactions): add monthly dashboard and statistics"
+git commit -m "docs(persistence): add phase 8a readiness audit"
 ```
