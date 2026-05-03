@@ -1,5 +1,7 @@
 import 'package:expense_app/app/app.dart';
 import 'package:expense_app/app/router.dart';
+import 'package:expense_app/features/transactions/data/in_memory_transaction_repository.dart';
+import 'package:expense_app/features/transactions/presentation/controllers/transaction_controller.dart';
 import 'package:expense_app/features/transactions/presentation/pages/dashboard_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,7 +9,16 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   testWidgets('Expense app renders dashboard', (WidgetTester tester) async {
-    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transactionRepositoryProvider.overrideWithValue(
+            InMemoryTransactionRepository(),
+          ),
+        ],
+        child: const ExpenseApp(),
+      ),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Quản lý chi tiêu'), findsOneWidget);
@@ -19,7 +30,16 @@ void main() {
   testWidgets('Bottom navigation opens transactions page', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transactionRepositoryProvider.overrideWithValue(
+            InMemoryTransactionRepository(),
+          ),
+        ],
+        child: const ExpenseApp(),
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('bottom_nav_transactions')));
@@ -35,7 +55,16 @@ void main() {
   testWidgets('Tap add transaction opens transaction form', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transactionRepositoryProvider.overrideWithValue(
+            InMemoryTransactionRepository(),
+          ),
+        ],
+        child: const ExpenseApp(),
+      ),
+    );
     await tester.pumpAndSettle();
 
     await tester.tap(find.byType(FloatingActionButton).first);
@@ -55,7 +84,16 @@ void main() {
   testWidgets('Tap edit transaction opens edit form with seeded data', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transactionRepositoryProvider.overrideWithValue(
+            InMemoryTransactionRepository(),
+          ),
+        ],
+        child: const ExpenseApp(),
+      ),
+    );
     appRouter.go('/transactions');
     await tester.pumpAndSettle();
 
@@ -84,7 +122,16 @@ void main() {
   testWidgets('Transactions page shows filter UI elements', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transactionRepositoryProvider.overrideWithValue(
+            InMemoryTransactionRepository(),
+          ),
+        ],
+        child: const ExpenseApp(),
+      ),
+    );
     appRouter.go('/transactions');
     await tester.pumpAndSettle();
 
@@ -96,7 +143,16 @@ void main() {
   testWidgets('Type filter chips are visible on transactions page', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transactionRepositoryProvider.overrideWithValue(
+            InMemoryTransactionRepository(),
+          ),
+        ],
+        child: const ExpenseApp(),
+      ),
+    );
     appRouter.go('/transactions');
     await tester.pumpAndSettle();
 
@@ -108,7 +164,16 @@ void main() {
   testWidgets('Month selector label is visible on transactions page', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transactionRepositoryProvider.overrideWithValue(
+            InMemoryTransactionRepository(),
+          ),
+        ],
+        child: const ExpenseApp(),
+      ),
+    );
     appRouter.go('/transactions');
     await tester.pumpAndSettle();
 
@@ -118,7 +183,16 @@ void main() {
   testWidgets('Search field accepts text input', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transactionRepositoryProvider.overrideWithValue(
+            InMemoryTransactionRepository(),
+          ),
+        ],
+        child: const ExpenseApp(),
+      ),
+    );
     appRouter.go('/transactions');
     await tester.pumpAndSettle();
 
@@ -132,7 +206,16 @@ void main() {
   testWidgets('Add transaction FAB still works from transactions page', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transactionRepositoryProvider.overrideWithValue(
+            InMemoryTransactionRepository(),
+          ),
+        ],
+        child: const ExpenseApp(),
+      ),
+    );
     appRouter.go('/transactions');
     await tester.pumpAndSettle();
 
@@ -144,7 +227,16 @@ void main() {
   });
 
   testWidgets('Dashboard shows month selector buttons', (WidgetTester tester) async {
-    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transactionRepositoryProvider.overrideWithValue(
+            InMemoryTransactionRepository(),
+          ),
+        ],
+        child: const ExpenseApp(),
+      ),
+    );
     appRouter.go('/');
     await tester.pumpAndSettle();
 
@@ -153,7 +245,16 @@ void main() {
   });
 
   testWidgets('Dashboard shows month label key', (WidgetTester tester) async {
-    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transactionRepositoryProvider.overrideWithValue(
+            InMemoryTransactionRepository(),
+          ),
+        ],
+        child: const ExpenseApp(),
+      ),
+    );
     appRouter.go('/');
     await tester.pumpAndSettle();
 
@@ -163,7 +264,16 @@ void main() {
   testWidgets('Dashboard month label is present and shows current month', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transactionRepositoryProvider.overrideWithValue(
+            InMemoryTransactionRepository(),
+          ),
+        ],
+        child: const ExpenseApp(),
+      ),
+    );
     appRouter.go('/');
     await tester.pumpAndSettle();
 
@@ -174,7 +284,16 @@ void main() {
   testWidgets('Dashboard month changes when previous is tapped', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transactionRepositoryProvider.overrideWithValue(
+            InMemoryTransactionRepository(),
+          ),
+        ],
+        child: const ExpenseApp(),
+      ),
+    );
     appRouter.go('/');
     await tester.pumpAndSettle();
 
@@ -196,7 +315,16 @@ void main() {
   testWidgets('Statistics page shows month label via goRouter', (
     WidgetTester tester,
   ) async {
-    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transactionRepositoryProvider.overrideWithValue(
+            InMemoryTransactionRepository(),
+          ),
+        ],
+        child: const ExpenseApp(),
+      ),
+    );
     await tester.pumpAndSettle();
 
     appRouter.go('/statistics');
@@ -206,7 +334,16 @@ void main() {
   });
 
   testWidgets('Search does not crash dashboard', (WidgetTester tester) async {
-    await tester.pumpWidget(const ProviderScope(child: ExpenseApp()));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          transactionRepositoryProvider.overrideWithValue(
+            InMemoryTransactionRepository(),
+          ),
+        ],
+        child: const ExpenseApp(),
+      ),
+    );
     await tester.pumpAndSettle();
 
     appRouter.go('/transactions');

@@ -1,15 +1,15 @@
-import 'package:expense_app/features/transactions/data/in_memory_transaction_repository.dart';
 import 'package:expense_app/features/transactions/data/transaction_repository.dart';
 import 'package:expense_app/features/transactions/domain/monthly_transaction_summary.dart';
 import 'package:expense_app/features/transactions/domain/transaction_model.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import 'repository_factory.dart';
 
 export 'package:expense_app/features/transactions/domain/monthly_transaction_summary.dart'
     show CategoryExpenseSummary;
 
 final transactionRepositoryProvider = Provider<TransactionRepository>(
-  (Ref ref) => _createDefaultTransactionRepository(),
+  (Ref ref) => createDefaultTransactionRepository(),
 );
 
 final transactionControllerProvider =
@@ -75,17 +75,6 @@ class TransactionController extends AsyncNotifier<TransactionState> {
         .getTransactions();
     return TransactionState.fromTransactions(transactions);
   }
-}
-
-TransactionRepository _createDefaultTransactionRepository() {
-  // TODO: Switch to DriftTransactionRepository on native targets after
-  // Android/Windows persistence QA. Keep InMemoryTransactionRepository for
-  // web demo to avoid native sqlite issues.
-  if (kIsWeb) {
-    return InMemoryTransactionRepository();
-  }
-
-  return InMemoryTransactionRepository();
 }
 
 class TransactionState {

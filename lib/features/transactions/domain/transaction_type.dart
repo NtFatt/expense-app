@@ -16,8 +16,10 @@ enum TransactionType {
   bool get isIncome => this == TransactionType.income;
 
   static TransactionType fromName(String value) {
+    final String normalized = value.trim().toLowerCase();
     return TransactionType.values.firstWhere(
-      (TransactionType type) => type.name == value,
+      (TransactionType type) => type.name == normalized,
+      orElse: () => TransactionType.expense,
     );
   }
 }
