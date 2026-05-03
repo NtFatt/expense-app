@@ -709,5 +709,5 @@
 
 ### Last Commits
 
-- `<this commit>` — Phase 8D: persistence hardening, migration docs, README update, Phase 8 complete
+- `7c327d2` — `docs(persistence): complete phase 8 hardening and documentation` — 2026-05-03 (Phase 8D)
 - `72a8d4d` — `docs(persistence): mark phase 8c native qa complete` — 2026-05-03 (Phase 8C)
