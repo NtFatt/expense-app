@@ -7,9 +7,9 @@
 - Stack: Flutter + Dart + Riverpod + GoRouter + Drift scaffold + fl_chart
 - Current run target: Chrome/web
 - Current default repository: Platform-aware (`InMemoryTransactionRepository` on web, `DriftTransactionRepository` on native)
-- Persistence status: Drift scaffolded and enabled on native (Windows/Android); web uses InMemory fallback via conditional imports
-- Current validation status: `flutter analyze` PASS, `flutter test` PASS (66 tests), `flutter run -d chrome` PASS
-- Last updated: `2026-05-03` (Phase 8B committed; repository switching live on native; 8C/8D pending)
+- Persistence status: Drift enabled and verified on native (Windows/Android); web uses InMemory fallback via conditional imports
+- Current validation status: `flutter analyze` PASS, `flutter test` PASS (66 tests), `flutter run -d chrome` PASS, `flutter run -d windows` PASS (native persistence verified)
+- Last updated: `2026-05-03` (Phase 8C completed; native persistence verified on Windows; 8D pending)
 
 ## 1. Status Legend
 
@@ -33,7 +33,7 @@
 | 5 | Drift/SQLite Scaffold | `[L]` | Đã scaffold Drift table/database/repository | build_runner/analyze/test pass | Scaffolded; Phase 8B enables on native |
 | 6 | MVP UX Polish | `[x]` | Bottom nav, statistics, reports, polish UX các page chính | pub get/analyze/test/chrome pass | Chrome/web vẫn an toàn |
 | 7 | Filter/Search/Monthly View/Edit Transaction | `[x]` | Phase 7A–7D done (edit, filter/search UI, monthly dashboard, monthly statistics) | analyze/test/chrome pass for 7D | Phase 7 COMPLETE |
-| 8 | Enable SQLite/Drift Persistence | `[~]` | Phase 8A+8B done; conditional imports wired; native QA pending (8C/8D) | analyze/test/chrome pass for 8B | Native uses Drift; web uses InMemory; persistence verified on native pending 8C |
+| 8 | Enable SQLite/Drift Persistence | `[~]` | Phase 8A–8C done; persistence verified on Windows; hardening/docs pending (8D) | analyze/test/chrome/windows manual persistence QA pass | Native uses Drift; web uses InMemory; persistence verified after restart on Windows |
 | 9 | CSV/PDF Export | `[ ]` | Chưa implement export thật | Chưa chạy | ReportsPage vẫn là "coming soon" UI |
 | 10 | Android Toolchain + APK Build | `[ ]` | Chưa xử lý Android toolchain/APK | Chưa chạy | Hiện chưa ưu tiên |
 | 11 | Final QA + Demo Script | `[ ]` | Chưa làm checklist demo cuối | Chưa chạy | Để sau MVP ổn định |
@@ -197,8 +197,8 @@
 - [x] Generate Drift code
 - [x] Create `DriftTransactionRepository`
 - [x] Enable Drift as default repository on native (Phase 8B)
-- [ ] Persist transactions after reload on native (Phase 8C — pending)
-- [ ] Native target QA (Phase 8C — pending)
+- [x] Persist transactions after reload on native (Phase 8C — VERIFIED)
+- [x] Native target QA (Phase 8C — VERIFIED on Windows)
 - [ ] Migration strategy (Phase 8D — pending)
 
 **Validation:**
@@ -208,10 +208,10 @@
 - [x] Chrome safe because Drift is not default (web uses InMemory via conditional import)
 
 **Notes:**
-- Drift scaffolded, now enabled on native via Phase 8B conditional imports.
+- Drift scaffolded, enabled on native via Phase 8B conditional imports.
 - Phase 8B switched native default to `DriftTransactionRepository(AppDatabase())`.
 - Web/Chrome remains on `InMemoryTransactionRepository` via `repository_factory_stub.dart`.
-- Persistence verified on native pending Phase 8C QA.
+- Persistence verified on Windows via Phase 8C manual QA: add/edit/delete all persist after restart.
 
 **Next step:**
 - Phase 8C: Native Persistence QA.
@@ -420,13 +420,9 @@
 - [x] `flutter doctor` — WARN (Android toolchain incomplete, expected)
 
 **Notes:**
-- Default repository remains `InMemoryTransactionRepository`.
-- Drift remains scaffolded but not enabled by default.
-- Phase 8B will implement repository switching — a one-line change in `_createDefaultTransactionRepository()`.
-- Web is fully protected by `kIsWeb` guard and `UnsupportedError` in `_openConnection()`.
-- Windows target is available for native persistence QA in Phase 8C.
-- All 8 fields in `TransactionModel` map correctly to Drift table columns.
-- No schema migration needed.
+- Phase 8C (native persistence QA) has been completed using Windows target.
+- All persistence operations verified: add/edit/delete survive app restart.
+- Dashboard/statistics/filter-search all correct after restart.
 - Full audit report at `docs/PHASE_8A_PERSISTENCE_READINESS_AUDIT.md`.
 
 **Next step:**
@@ -453,7 +449,7 @@
 - [x] `flutter analyze` — PASS
 - [x] `flutter test` — PASS (66 tests: 30 filter + 10 controller + 11 transaction_type + 15 widget)
 - [x] `flutter run -d chrome --web-run-headless --no-resident` — PASS
-- [~] `flutter run -d windows` — BLOCKED (Windows Developer Mode / symlink support not enabled in OS; not an app code issue)
+- [x] `flutter run -d windows` — PASS (Phase 8C: app launched and ran on Windows after enabling Developer Mode)
 
 **Notes:**
 - Web/Chrome uses `InMemoryTransactionRepository` via `repository_factory_stub.dart`.
@@ -461,34 +457,49 @@
 - `app_database.dart` is excluded from web compilation tree by conditional import — no `dart:ffi` leak on web.
 - `TransactionType.fromName` now normalizes input (trim + lowercase) and falls back to `expense` for unknown strings.
 - Widget tests override `transactionRepositoryProvider` with `InMemoryTransactionRepository` to avoid native DB in tests.
-- Phase 8B complete. Persistence verification on native is Phase 8C scope.
-- Windows environment blocked by Developer Mode — app code is correct.
+- Phase 8B complete. Persistence verification on native done in Phase 8C using Windows target.
+- Windows Developer Mode was successfully enabled before Phase 8C testing.
+- Phase 8D is the final sub-phase.
 
 **Next step:**
 - Phase 8C — Native Persistence QA.
 
 #### Phase 8C — Native Persistence QA
 
-**Status:** `[ ] NOT STARTED`
+**Status:** `[x] DONE`
 **Goal:** Verify that add/edit/delete transactions truly persist after app restart on native target (Windows/Android).
 
 **Checklist:**
-- [ ] Run app on Windows native target (`flutter run -d windows`)
-- [ ] Add a transaction and restart the app
-- [ ] Verify add persists after restart
-- [ ] Verify edit persists after restart
-- [ ] Verify delete persists after restart
-- [ ] Verify monthly dashboard/statistics are correct after restart
-- [ ] Run on Android if Windows Developer Mode cannot be enabled
+- [x] Run app on Windows native target (`flutter run -d windows`)
+- [x] Add a transaction and restart the app
+- [x] Verify add persists after restart
+- [x] Verify edit persists after restart
+- [x] Verify delete persists after restart
+- [x] Verify monthly dashboard/statistics are correct after restart
+- [x] Verify transactions filter/search after restart
+- [x] Web/Chrome fallback remains safe
 
 **Validation:**
-- [ ] `flutter run -d windows` — persistence smoke test
-- [ ] Restart app and verify data survives
+- [x] `flutter run -d windows` — PASS (after enabling Developer Mode)
+- [x] Manual restart persistence smoke test — PASS
+- [x] Add transaction persists after restart — PASS
+- [x] Edit transaction persists after restart — PASS
+- [x] Delete transaction does not reappear after restart — PASS
+- [x] Dashboard monthly totals correct after restart — PASS
+- [x] Statistics monthly breakdown correct after restart — PASS
+- [x] Transactions filter/search works after restart — PASS
+- [x] `flutter analyze` — PASS (Phase 8C regression)
+- [x] `flutter test` — PASS (Phase 8C regression)
+- [x] `flutter run -d chrome --web-run-headless --no-resident` — PASS (web fallback safe)
 
 **Notes:**
-- Enable Windows Developer Mode first: `start ms-settings:developers`
-- Android can be used as alternative native target once toolchain is fixed (Phase 10).
-- This is the definitive test for Phase 8 completion.
+- Windows Developer Mode enabled successfully.
+- `flutter run -d windows` launched Drift-backed native app without errors.
+- All persistence operations (add/edit/delete) survive app restart.
+- Dashboard and Statistics monthly views reflect persisted data correctly after restart.
+- Filter/search on TransactionsPage works correctly on persisted data.
+- Web/Chrome remains on `InMemoryTransactionRepository` — no regression.
+- Phase 8D (hardening/migration/docs) is the final sub-phase before Phase 8 can be marked DONE.
 
 **Next step:**
 - Phase 8D — Hardening, Migration, Documentation.
@@ -526,11 +537,11 @@
 
 **Notes:**
 - `ReportsPage` currently shows "coming soon" SnackBar for all export actions.
-- Phase 9 should not start until Phase 8C (native persistence QA) is complete.
-- Export depends on real data from repository.
+- Phase 8C is now complete — Phase 9 can proceed.
+- Export depends on real data from repository (Drift on native, InMemory on web).
 
 **Next step:**
-- Complete Phase 8C (native persistence QA) before starting Phase 9.
+- Phase 9: Start CSV/PDF export implementation.
 
 ### Phase 10 — Android Toolchain + APK Build
 
@@ -555,7 +566,7 @@
 
 **Notes:**
 - Phase này độc lập với web demo nhưng là prerequisite quan trọng cho persistence QA trên Android.
-- Windows target can substitute for Android in Phase 8C.
+- Phase 8C used Windows target successfully for native persistence QA.
 
 **Next step:**
 - Fix local Android toolchain once persistence rollout is scheduled.
@@ -644,14 +655,18 @@
 | **2026-05-03** | **`flutter analyze`** | **PASS** | **Current state: no issues found** |
 | **2026-05-03** | **`flutter test`** | **PASS** | **Current state: 66 tests passed** |
 | **2026-05-03** | **`flutter run -d chrome`** | **PASS** | **Current state: Chrome running, DevTools available** |
+| **2026-05-03** | **`flutter run -d windows`** | **PASS** | **Phase 8C: native Drift app launch after enabling Developer Mode** |
+| **2026-05-03** | **Manual persistence QA** | **PASS** | **Phase 8C: add/edit/delete transactions persisted after restart on Windows; dashboard/statistics/filter-search all correct** |
+| **2026-05-03** | **`flutter analyze`** | **PASS** | **Phase 8C regression: no issues found** |
+| **2026-05-03** | **`flutter test`** | **PASS** | **Phase 8C regression: 66 tests passed** |
+| **2026-05-03** | **`flutter run -d chrome --web-run-headless --no-resident`** | **PASS** | **Phase 8C: web fallback remains safe** |
 
 ## 5. Current Risks / Technical Notes
 
-- Android toolchain chưa hoàn chỉnh: thiếu cmdline-tools/licenses. Dùng Windows target cho Phase 8C QA.
-- Windows Developer Mode chưa bật: symlink support cần enable (`start ms-settings:developers`). Không phải lỗi code.
-- Drift đã bật trên native (Windows/Android) qua Phase 8B conditional imports; web giữ InMemory.
+- Android toolchain chưa hoàn chỉnh: thiếu cmdline-tools/licenses. Chưa chạy trên Android (Phase 10).
+- Drift persistence đã verified trên Windows (Phase 8C). Android persistence chưa test.
 - Export CSV/PDF/backup vẫn là "coming soon" UI, chưa implement thật (Phase 9).
-- Native persistence sau restart: chờ Phase 8C verify.
+- Phase 8D (hardening/migration/docs) vẫn chưa làm. Phase 8 chưa DONE.
 - Dashboard và Statistics dùng monthly view.
 - 15 widget tests override `transactionRepositoryProvider` với `InMemoryTransactionRepository` để chạy trên web và tránh native DB.
 
@@ -659,17 +674,8 @@
 
 ### Immediate Next Step
 
-- Phase 8C: Native Persistence QA — enable Windows Developer Mode (`start ms-settings:developers`), run `flutter run -d windows`, verify add/edit/delete transactions persist after app restart.
-
-### Enable Windows Developer Mode
-
-```powershell
-start ms-settings:developers
-```
-Then re-run: `flutter run -d windows`
+- Phase 8D: Hardening, Migration, Documentation — document migration strategy, harden repository error handling, update README/docs.
 
 ### Last Commits
 
-- `8657231` — `feat(persistence): switch native transactions to drift with conditional imports` — 2026-05-03 (Phase 8B)
-- `5938861` — `docs(persistence): add phase 8a readiness audit` — 2026-05-03 (Phase 8A)
-- `30829d1` — `docs: refresh timestamp after Phase 7D verification` — 2026-05-03 (Phase 7D)
+- `<pending>` — Phase 8C docs update (this commit)
