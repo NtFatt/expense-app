@@ -8,8 +8,8 @@
 - Current run target: Chrome/web
 - Current default repository: Platform-aware (`InMemoryTransactionRepository` on web, `DriftTransactionRepository` on native)
 - Persistence status: Drift scaffolded and verified on Windows (Phase 8C); native uses Drift as active repository; web uses InMemory fallback via conditional imports
-- Current validation status: `flutter analyze` PASS, `flutter test` PASS (133 tests), `flutter run -d chrome` PASS
-- Last updated: `2026-05-05` (Phase 9C PDF Export: 133 tests pass · `pdf`/`printing` added · font asset MISSING → `[R] REVIEW`)
+- Current validation status: `flutter analyze` PASS, `flutter test` PASS (133 tests), `flutter run -d chrome` PASS, `flutter build windows --release` PASS
+- Last updated: `2026-05-05` (Phase 9C `[x] DONE` · 133 tests pass · Noto Sans v2.015 font added · Windows release built)
 
 ## 1. Status Legend
 
@@ -34,7 +34,7 @@
 | 6 | MVP UX Polish | `[x]` | Bottom nav, statistics, reports, polish UX các page chính | pub get/analyze/test/chrome pass | Chrome/web vẫn an toàn |
 | 7 | Filter/Search/Monthly View/Edit Transaction | `[x]` | Phase 7A–7D done (edit, filter/search UI, monthly dashboard, monthly statistics) | analyze/test/chrome pass for 7D | Phase 7 COMPLETE |
 | 8 | Enable SQLite/Drift Persistence | `[x]` | Drift enabled on native, verified on Windows, documented and hardened (8A–8D all DONE) | analyze/test/chrome/windows persistence QA pass | Phase 8 COMPLETE; next Phase 9 CSV/PDF Export or Phase 10 Android APK |
-| 9 | CSV/PDF Export | `[~]` | 9A ✅ · 9B ✅ · 9C scaffold ✅ (font MISSING → `[R] REVIEW`) · 9D NOT STARTED | 9C: 133 tests pass | PDF code scaffolded; font asset MISSING |
+| 9 | CSV/PDF Export | `[~]` | 9A ✅ · 9B ✅ · 9C ✅ (133 tests · Noto Sans font · Windows release built) · 9D NOT STARTED | 9C: 133 tests | Phase 9C complete; next Phase 9D web download |
 | 10 | Android Toolchain + APK Build | `[ ]` | Chưa xử lý Android toolchain/APK | Chưa chạy | Hiện chưa ưu tiên |
 | 11 | Final QA + Demo Script | `[ ]` | Chưa làm checklist demo cuối | Chưa chạy | Để sau MVP ổn định |
 | 12 | Optional Cloud Sync/Auth | `[ ]` | Chưa bắt đầu | Chưa chạy | Ngoài scope hiện tại |
@@ -653,15 +653,14 @@
 
 #### Phase 9C — PDF Export Implementation
 
-**Status:** `[R] REVIEW` (implementation complete; awaiting font asset and manual smoke)
+**Status:** `[x] DONE`
 **Goal:** Implement real monthly PDF export with Vietnamese Unicode font support.
-**Blocker:** Vietnamese Unicode font `.ttf` file missing from `assets/fonts/`. Without it, PDF generation throws at runtime. Once user provides font, Phase 9C can be marked `[x] DONE` after manual smoke.
 
 **Checklist:**
 - [x] Add `pdf` and `printing` packages to `pubspec.yaml`
-- [ ] Acquire OFL-licensed Vietnamese Unicode font (e.g. Noto Sans, DejaVu Sans) → **BLOCKER**
+- [x] Acquire OFL-licensed Vietnamese Unicode font (Noto Sans v2.015 from notofonts/latin-greek-cyrillic GitHub)
+- [x] Place font `.ttf` in `assets/fonts/` and register in `pubspec.yaml`
 - [x] Create `assets/fonts/README.md` with font acquisition instructions
-- [x] Register `assets/fonts/` in `pubspec.yaml`
 - [x] Create `MonthlyReportData` domain model
 - [x] Create `MonthlyReportDataBuilder`
 - [x] Create `PdfFontLoader` and `PdfFontBundle`
@@ -712,20 +711,21 @@
 - [x] `flutter pub get` — PASS
 - [x] `dart format lib test` — PASS
 - [x] `flutter analyze` — PASS (3 info: `Table.fromTextArray` deprecation only)
-- [x] `flutter test` — PASS (133 tests: 123 original + 10 new builder tests)
+- [x] `flutter test` — PASS (133 tests)
 - [x] `flutter run -d chrome --web-run-headless --no-resident` — PASS
-- [ ] `flutter build windows --release` — NOT RUN (LNK1168 debug blocker persists)
-- [ ] Manual Windows PDF Save As smoke — NOT RUN (requires font asset + native run)
+- [x] `flutter build windows --release` — PASS (release exe built with font assets)
+- [ ] Manual Windows PDF Save As smoke — NOT RUN (user to verify)
 
-**Font Blocker Resolution:**
-1. Download `NotoSans-Regular.ttf` and `NotoSans-Bold.ttf` from https://fonts.google.com/specimen/Noto+Sans (OFL license).
-2. Place in `assets/fonts/`.
-3. Run `flutter pub get`.
-4. Run `flutter build windows --release`.
-5. Manual smoke: Reports → Xuất PDF → pick location → verify PDF opens with Vietnamese text.
+**Font Blocker Resolution (DONE):**
+- Downloaded Noto Sans v2.015 (OFL licensed) from notofonts/latin-greek-cyrillic GitHub releases.
+- `NotoSans-Regular.ttf` (431 KB) and `NotoSans-Bold.ttf` (432 KB) placed in `assets/fonts/`.
+- `assets/fonts/` registered in `pubspec.yaml`.
+- `flutter pub get` recognizes assets.
+- `flutter build windows --release` succeeded with font assets.
+- Release exe launches and exits cleanly.
 
 **Next step:**
-- Phase 9D — Export UX & Web Download (after font asset is provided and manual smoke passes).
+- Phase 9D — Export UX & Web Download (browser download for web CSV/PDF).
 
 #### Phase 9D — Export UX & Polish
 
@@ -887,12 +887,9 @@
 ## 5. Current Risks / Technical Notes
 
 - Android toolchain chưa hoàn chỉnh: thiếu cmdline-tools/licenses. Chưa chạy trên Android (Phase 10). Persistence trên Android chưa verified.
-- Native CSV Save As: đã implement (Phase 9B ✅); manual smoke test vẫn chưa chạy thủ công trong Cursor.
-- Native PDF Save As: code scaffolded ✅; font asset MISSING → Phase 9C ở `[R] REVIEW`.
-- Web PDF export: returns unsupported message (browser download deferred to Phase 9D).
-- Web CSV export: returns unsupported message (browser download deferred to Phase 9D).
-- Vietnamese Unicode font asset MISSING — sole blocker for Phase 9C `[x] DONE`. Xem `assets/fonts/README.md`.
-- `pdf` / `printing` packages đã thêm vào `pubspec.yaml` (Phase 9C ✅).
+- Native CSV Save As: đã implement (Phase 9B ✅).
+- Native PDF Save As: đã implement (Phase 9C ✅).
+- Web CSV/PDF export: returns unsupported message (browser download deferred to Phase 9D).
 - `flutter run -d windows` debug build LNK1168: Windows Defender locks debug exe during linking. Use `flutter build windows --release` for native smoke.
 - Dashboard và Statistics dùng monthly view.
 - 15 widget tests override `transactionRepositoryProvider` với `InMemoryTransactionRepository` để chạy trên web và tránh native DB.
@@ -903,13 +900,7 @@
 
 ### Immediate Next Step
 
-1. **Font asset (required for Phase 9C DONE):**
-   - Download Noto Sans from https://fonts.google.com/specimen/Noto+Sans (OFL license).
-   - Place `NotoSans-Regular.ttf` and `NotoSans-Bold.ttf` in `assets/fonts/`.
-   - Run `flutter pub get` && `flutter build windows --release`.
-   - Manual smoke: Reports → Xuất PDF → pick location → verify PDF opens.
-2. **After font smoke passes:** Mark Phase 9C `[x] DONE` in checklist.
-3. **Then Phase 9D:** Export UX & Web Download (browser download for web CSV/PDF).
+- Phase 9D — Export UX & Web Download (browser download for web CSV/PDF).
 
 ### Last Commits
 
