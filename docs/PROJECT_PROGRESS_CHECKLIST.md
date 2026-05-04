@@ -935,8 +935,7 @@
 
 ### Last Commits
 
+- `e890523` — `feat(reports): implement web browser download for CSV and PDF (Phase 9D)` — 2026-05-05
 - `2eefbe8` — `docs(progress): sync checklist with current repo state (Phase 9D IN PROGRESS, 133 tests)` — 2026-05-05
 - `585df8a` — `feat(reports): add Noto Sans font assets for PDF Vietnamese rendering` — 2026-05-05
 - `0b05e20` — `feat(reports): implement monthly PDF export scaffold (Phase 9C)` — 2026-05-05
-- `cc8249f` — `docs(progress): update date to 2026-05-05, stale commits corrected` — 2026-05-05
-- `7d9c7c0` — `docs(progress): record Phase 9B windows release smoke and debug blocker` — 2026-05-04
