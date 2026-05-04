@@ -4,8 +4,6 @@ import 'package:expense_app/features/reports/data/report_file_write_result.dart'
 import 'package:expense_app/features/reports/data/report_file_writer.dart';
 import 'package:file_selector/file_selector.dart';
 
-export 'package:expense_app/features/reports/data/report_file_writer_stub.dart';
-
 /// Native file writer — uses `file_selector` to present a Save As dialog,
 /// then writes bytes to the user-chosen path. This file MUST NOT be imported
 /// on web targets.

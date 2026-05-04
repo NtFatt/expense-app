@@ -1,14 +1,11 @@
 import 'package:expense_app/features/reports/data/report_file_write_result.dart';
 import 'package:expense_app/features/reports/data/report_file_writer.dart';
 
-export 'package:expense_app/features/reports/data/report_file_writer_stub.dart';
-
-/// Web-stub file writer — signals unsupported on web so the browser download
-/// path can be deferred to Phase 9D.
+/// Stub file writer — signals unsupported on platforms that are not native or
+/// web (e.g. the test VM during unit tests).
 ///
-/// This file is used when compiling for web targets (where `dart.library.io`
-/// is not available). It contains no `dart:io` imports so the web bundle
-/// will not include any native file system code.
+/// This file is selected by the conditional import in `report_file_writer.dart`
+/// when neither `dart.library.io` nor `dart.library.js_interop` is available.
 ReportFileWriter createReportFileWriter() => const _StubReportFileWriter();
 
 class _StubReportFileWriter implements ReportFileWriter {

@@ -9,6 +9,8 @@ A personal expense tracking application built with Flutter.
 - **Transaction Management** — filter by type (all / income / expense), search by category or note, navigate by month
 - **Monthly Statistics** — spending breakdown by category with `fl_chart` visualizations, top category highlight
 - **Local Persistence** — transactions are saved to a local SQLite database on native platforms (Windows/Android); web uses an in-memory store
+- **Report Export** — export transactions as CSV or monthly PDF report; native uses a Save As dialog, web triggers a browser download
+- **PDF Vietnamese Support** — PDF reports render Vietnamese text correctly using bundled Noto Sans Unicode font (OFL licensed)
 
 ## Tech Stack
 
@@ -33,13 +35,39 @@ The app uses a **platform-aware repository strategy**:
 
 This is achieved via Dart conditional imports — native database code is completely excluded from the web bundle at compile time.
 
+## Report Export
+
+The app supports exporting transaction data as CSV or a monthly PDF report.
+
+### CSV Export
+
+| Platform | Mechanism |
+|----------|-----------|
+| Chrome / Web | Browser download (UTF-8 BOM for Excel compatibility) |
+| Windows / macOS / Linux / Android | Save As dialog via `file_selector` |
+
+The exported CSV contains: `id`, `transaction_date`, `type`, `category`, `amount`, `signed_amount`, `note`. Transactions are sorted newest first.
+
+### PDF Monthly Report
+
+| Platform | Mechanism |
+|----------|-----------|
+| Chrome / Web | Browser download (via `package:web` Blob API) |
+| Windows / macOS / Linux / Android | Save As dialog via `file_selector` |
+
+The PDF includes a monthly title, income/expense/balance overview, category breakdown with percentages, a transaction table, and a generated-at timestamp. Vietnamese text is rendered using the bundled **Noto Sans** Unicode font (assets/fonts/NotoSans-Regular.ttf and NotoSans-Bold.ttf, OFL licensed).
+
+### Data Backup
+
+SQLite/Drift database backup is out of scope for Phase 9. The app's persistence is handled by the local SQLite database on native platforms.
+
 ## Validation
 
 ```bash
-flutter analyze   # No issues
-flutter test      # 66 tests
+flutter analyze   # No issues (3 info deprecations from pdf package)
+flutter test      # 133 tests
 flutter run -d chrome
-flutter run -d windows
+flutter build windows --release
 ```
 
 ## Getting Started
@@ -82,6 +110,6 @@ test/
 
 See `docs/PROJECT_PROGRESS_CHECKLIST.md` for full project roadmap and completed phases.
 
-Current completion: **Phase 0–8** — all persistence infrastructure verified on Windows.
+Current completion: **Phase 0–9** — CSV export, PDF monthly report, web browser download, native Save As dialog all implemented and validated.
 
-Next: Phase 9 (CSV/PDF Export) or Phase 10 (Android APK), depending on priority.
+Next: Phase 10 (Android Toolchain + APK Build) or Phase 11 (Final QA + Demo Script).
