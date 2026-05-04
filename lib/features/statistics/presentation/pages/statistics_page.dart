@@ -20,9 +20,18 @@ class StatisticsPage extends ConsumerWidget {
   const StatisticsPage({super.key});
 
   static const List<String> _months = [
-    'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
-    'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8',
-    'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
+    'Tháng 1',
+    'Tháng 2',
+    'Tháng 3',
+    'Tháng 4',
+    'Tháng 5',
+    'Tháng 6',
+    'Tháng 7',
+    'Tháng 8',
+    'Tháng 9',
+    'Tháng 10',
+    'Tháng 11',
+    'Tháng 12',
   ];
 
   String _monthLabel(DateTime month) =>
@@ -63,11 +72,12 @@ class StatisticsPage extends ConsumerWidget {
         data: (TransactionState data) {
           final List<TransactionModel> monthlyTransactions =
               filterTransactionsByMonth(
-            transactions: data.transactions,
-            selectedMonth: filter.selectedMonth,
+                transactions: data.transactions,
+                selectedMonth: filter.selectedMonth,
+              );
+          final MonthlyTransactionSummary summary = MonthlyTransactionSummary(
+            transactions: monthlyTransactions,
           );
-          final MonthlyTransactionSummary summary =
-              MonthlyTransactionSummary(transactions: monthlyTransactions);
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,7 +126,10 @@ class StatisticsPage extends ConsumerWidget {
                   ),
                   StatisticsSummaryCard(
                     title: 'Tổng chi',
-                    value: formatCurrency(summary.totalExpense, withSign: false),
+                    value: formatCurrency(
+                      summary.totalExpense,
+                      withSign: false,
+                    ),
                     icon: Icons.north_east_rounded,
                     accentColor: const Color(0xFFEA580C),
                   ),
@@ -138,8 +151,7 @@ class StatisticsPage extends ConsumerWidget {
               if (summary.totalExpense == 0)
                 EmptyState(
                   title: 'Chưa có dữ liệu chi tiêu',
-                  message:
-                      'Tháng này chưa có khoản chi nào để thống kê.',
+                  message: 'Tháng này chưa có khoản chi nào để thống kê.',
                   icon: Icons.pie_chart_outline_rounded,
                   actionLabel: 'Thêm giao dịch',
                   onActionPressed: () => context.push('/transactions/new'),
@@ -178,7 +190,8 @@ class StatisticsPage extends ConsumerWidget {
                           summary: summary.expenseCategorySummaries[index],
                           totalExpense: summary.totalExpense,
                         ),
-                        if (index != summary.expenseCategorySummaries.length - 1)
+                        if (index !=
+                            summary.expenseCategorySummaries.length - 1)
                           const Divider(height: 24, color: Color(0xFFE2E8F0)),
                       ],
                     ],

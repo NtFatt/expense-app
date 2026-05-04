@@ -122,7 +122,8 @@ class _TransactionFilterBarState extends State<TransactionFilterBar> {
         Expanded(
           child: _TypeChip(
             label: 'Thu nhập',
-            isSelected: widget.filter.typeFilter == TransactionTypeFilter.income,
+            isSelected:
+                widget.filter.typeFilter == TransactionTypeFilter.income,
             onTap: () => widget.onTypeChanged(TransactionTypeFilter.income),
           ),
         ),
@@ -130,7 +131,8 @@ class _TransactionFilterBarState extends State<TransactionFilterBar> {
         Expanded(
           child: _TypeChip(
             label: 'Chi tiêu',
-            isSelected: widget.filter.typeFilter == TransactionTypeFilter.expense,
+            isSelected:
+                widget.filter.typeFilter == TransactionTypeFilter.expense,
             onTap: () => widget.onTypeChanged(TransactionTypeFilter.expense),
           ),
         ),
@@ -141,11 +143,7 @@ class _TransactionFilterBarState extends State<TransactionFilterBar> {
   Widget _buildActiveFilterBadge() {
     return Row(
       children: [
-        const Icon(
-          Icons.filter_list,
-          size: 14,
-          color: Color(0xFF2563EB),
-        ),
+        const Icon(Icons.filter_list, size: 14, color: Color(0xFF2563EB)),
         const SizedBox(width: 4),
         Text(
           '${widget.filter.activeFilterCount} bộ lọc',
@@ -191,9 +189,7 @@ class _TypeChip extends StatelessWidget {
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFF2563EB)
-              : const Color(0xFFF1F5F9),
+          color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFF1F5F9),
           borderRadius: BorderRadius.circular(12),
         ),
         alignment: Alignment.center,

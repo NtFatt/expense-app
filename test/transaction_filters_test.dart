@@ -78,7 +78,9 @@ void main() {
     });
 
     test('normalizes selectedMonth on construction', () {
-      final state = TransactionFilterState(selectedMonth: DateTime(2025, 4, 15));
+      final state = TransactionFilterState(
+        selectedMonth: DateTime(2025, 4, 15),
+      );
       expect(state.selectedMonth, DateTime(2025, 4));
     });
 
@@ -166,16 +168,59 @@ void main() {
     final may2025 = DateTime(2025, 5, 1);
 
     final transactions = <TransactionModel>[
-      _tx(id: '1', type: TransactionType.income, amount: 1000, category: 'Lương', note: 'Lương tháng 3', date: mar2025, createdAt: mar2025),
-      _tx(id: '2', type: TransactionType.expense, amount: 200, category: 'Ăn uống', note: 'Ăn sáng', date: mar2025, createdAt: mar2025),
-      _tx(id: '3', type: TransactionType.expense, amount: 150, category: 'Giải trí', note: 'Cà phê', date: apr2025, createdAt: apr2025),
-      _tx(id: '4', type: TransactionType.income, amount: 500, category: 'Thưởng', note: null, date: apr2025, createdAt: apr2025),
-      _tx(id: '5', type: TransactionType.expense, amount: 80, category: 'Di chuyển', note: 'Grab', date: may2025, createdAt: may2025),
+      _tx(
+        id: '1',
+        type: TransactionType.income,
+        amount: 1000,
+        category: 'Lương',
+        note: 'Lương tháng 3',
+        date: mar2025,
+        createdAt: mar2025,
+      ),
+      _tx(
+        id: '2',
+        type: TransactionType.expense,
+        amount: 200,
+        category: 'Ăn uống',
+        note: 'Ăn sáng',
+        date: mar2025,
+        createdAt: mar2025,
+      ),
+      _tx(
+        id: '3',
+        type: TransactionType.expense,
+        amount: 150,
+        category: 'Giải trí',
+        note: 'Cà phê',
+        date: apr2025,
+        createdAt: apr2025,
+      ),
+      _tx(
+        id: '4',
+        type: TransactionType.income,
+        amount: 500,
+        category: 'Thưởng',
+        note: null,
+        date: apr2025,
+        createdAt: apr2025,
+      ),
+      _tx(
+        id: '5',
+        type: TransactionType.expense,
+        amount: 80,
+        category: 'Di chuyển',
+        note: 'Grab',
+        date: may2025,
+        createdAt: may2025,
+      ),
     ];
 
     test('filters by selected month', () {
       final filter = TransactionFilterState(selectedMonth: DateTime(2025, 3));
-      final result = applyTransactionFilters(transactions: transactions, filter: filter);
+      final result = applyTransactionFilters(
+        transactions: transactions,
+        filter: filter,
+      );
       expect(result.length, 2);
       expect(result.every((t) => t.transactionDate.month == 3), isTrue);
     });
@@ -185,7 +230,10 @@ void main() {
         selectedMonth: DateTime(2025, 3),
         typeFilter: TransactionTypeFilter.income,
       );
-      final result = applyTransactionFilters(transactions: transactions, filter: filter);
+      final result = applyTransactionFilters(
+        transactions: transactions,
+        filter: filter,
+      );
       expect(result.length, 1);
       expect(result.first.type, TransactionType.income);
     });
@@ -195,7 +243,10 @@ void main() {
         selectedMonth: DateTime(2025, 4),
         typeFilter: TransactionTypeFilter.expense,
       );
-      final result = applyTransactionFilters(transactions: transactions, filter: filter);
+      final result = applyTransactionFilters(
+        transactions: transactions,
+        filter: filter,
+      );
       expect(result.length, 1);
       expect(result.first.type, TransactionType.expense);
       expect(result.first.category, 'Giải trí');
@@ -206,7 +257,10 @@ void main() {
         selectedMonth: DateTime(2025, 4),
         searchQuery: 'giải trí',
       );
-      final result = applyTransactionFilters(transactions: transactions, filter: filter);
+      final result = applyTransactionFilters(
+        transactions: transactions,
+        filter: filter,
+      );
       expect(result.length, 1);
       expect(result.first.category, 'Giải trí');
     });
@@ -216,7 +270,10 @@ void main() {
         selectedMonth: DateTime(2025, 3),
         searchQuery: 'ăn',
       );
-      final result = applyTransactionFilters(transactions: transactions, filter: filter);
+      final result = applyTransactionFilters(
+        transactions: transactions,
+        filter: filter,
+      );
       expect(result.length, 1);
       expect(result.first.note, 'Ăn sáng');
     });
@@ -226,7 +283,10 @@ void main() {
         selectedMonth: DateTime(2025, 3),
         searchQuery: 'lương',
       );
-      final result = applyTransactionFilters(transactions: transactions, filter: filter);
+      final result = applyTransactionFilters(
+        transactions: transactions,
+        filter: filter,
+      );
       expect(result.length, 1);
       expect(result.first.displayTitle, 'Lương tháng 3');
     });
@@ -236,7 +296,10 @@ void main() {
         selectedMonth: DateTime(2025, 4),
         searchQuery: 'thưởng',
       );
-      final result = applyTransactionFilters(transactions: transactions, filter: filter);
+      final result = applyTransactionFilters(
+        transactions: transactions,
+        filter: filter,
+      );
       expect(result.length, 1);
       expect(result.first.category, 'Thưởng');
     });
@@ -247,7 +310,10 @@ void main() {
         typeFilter: TransactionTypeFilter.expense,
         searchQuery: 'ăn',
       );
-      final result = applyTransactionFilters(transactions: transactions, filter: filter);
+      final result = applyTransactionFilters(
+        transactions: transactions,
+        filter: filter,
+      );
       expect(result.length, 1);
       expect(result.first.category, 'Ăn uống');
     });
@@ -258,15 +324,26 @@ void main() {
         typeFilter: TransactionTypeFilter.all,
         searchQuery: '',
       );
-      final result = applyTransactionFilters(transactions: transactions, filter: filter);
+      final result = applyTransactionFilters(
+        transactions: transactions,
+        filter: filter,
+      );
       expect(result.length, 2);
     });
 
     test('output sorted by transactionDate descending', () {
       final filter = TransactionFilterState(selectedMonth: DateTime(2025, 4));
-      final result = applyTransactionFilters(transactions: transactions, filter: filter);
-      expect(result[0].transactionDate.isAfter(result[1].transactionDate) ||
-             result[0].transactionDate.isAtSameMomentAs(result[1].transactionDate), isTrue);
+      final result = applyTransactionFilters(
+        transactions: transactions,
+        filter: filter,
+      );
+      expect(
+        result[0].transactionDate.isAfter(result[1].transactionDate) ||
+            result[0].transactionDate.isAtSameMomentAs(
+              result[1].transactionDate,
+            ),
+        isTrue,
+      );
     });
 
     test('same transactionDate sorted by createdAt descending', () {
@@ -274,22 +351,51 @@ void main() {
       final earlier = DateTime(2025, 6, 1, 8, 0);
 
       final sameDateTxns = <TransactionModel>[
-        _tx(id: 'early', type: TransactionType.expense, amount: 1, category: 'A', note: 'a', date: DateTime(2025, 6, 1), createdAt: earlier),
-        _tx(id: 'late', type: TransactionType.expense, amount: 2, category: 'B', note: 'b', date: DateTime(2025, 6, 1), createdAt: later),
+        _tx(
+          id: 'early',
+          type: TransactionType.expense,
+          amount: 1,
+          category: 'A',
+          note: 'a',
+          date: DateTime(2025, 6, 1),
+          createdAt: earlier,
+        ),
+        _tx(
+          id: 'late',
+          type: TransactionType.expense,
+          amount: 2,
+          category: 'B',
+          note: 'b',
+          date: DateTime(2025, 6, 1),
+          createdAt: later,
+        ),
       ];
 
       final filter = TransactionFilterState(selectedMonth: DateTime(2025, 6));
-      final result = applyTransactionFilters(transactions: sameDateTxns, filter: filter);
+      final result = applyTransactionFilters(
+        transactions: sameDateTxns,
+        filter: filter,
+      );
       expect(result[0].id, 'late');
       expect(result[1].id, 'early');
     });
 
     test('does not mutate input list', () {
       final input = [
-        _tx(id: '1', type: TransactionType.expense, amount: 1, category: 'X', note: 'x', date: DateTime(2025, 7, 1)),
+        _tx(
+          id: '1',
+          type: TransactionType.expense,
+          amount: 1,
+          category: 'X',
+          note: 'x',
+          date: DateTime(2025, 7, 1),
+        ),
       ];
       final originalLength = input.length;
-      applyTransactionFilters(transactions: input, filter: TransactionFilterState(selectedMonth: DateTime(2025, 7)));
+      applyTransactionFilters(
+        transactions: input,
+        filter: TransactionFilterState(selectedMonth: DateTime(2025, 7)),
+      );
       expect(input.length, originalLength);
     });
 
@@ -298,7 +404,10 @@ void main() {
         selectedMonth: DateTime(2025, 3),
         typeFilter: TransactionTypeFilter.all,
       );
-      final result = applyTransactionFilters(transactions: transactions, filter: filter);
+      final result = applyTransactionFilters(
+        transactions: transactions,
+        filter: filter,
+      );
       expect(result.length, 2);
     });
   });

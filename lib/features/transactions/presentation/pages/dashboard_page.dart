@@ -21,9 +21,18 @@ class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
 
   static const List<String> _months = [
-    'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
-    'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8',
-    'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
+    'Tháng 1',
+    'Tháng 2',
+    'Tháng 3',
+    'Tháng 4',
+    'Tháng 5',
+    'Tháng 6',
+    'Tháng 7',
+    'Tháng 8',
+    'Tháng 9',
+    'Tháng 10',
+    'Tháng 11',
+    'Tháng 12',
   ];
 
   String _monthLabel(DateTime month) =>
@@ -65,11 +74,12 @@ class DashboardPage extends ConsumerWidget {
         data: (TransactionState data) {
           final List<TransactionModel> monthlyTransactions =
               filterTransactionsByMonth(
-            transactions: data.transactions,
-            selectedMonth: filter.selectedMonth,
+                transactions: data.transactions,
+                selectedMonth: filter.selectedMonth,
+              );
+          final MonthlyTransactionSummary summary = MonthlyTransactionSummary(
+            transactions: monthlyTransactions,
           );
-          final MonthlyTransactionSummary summary =
-              MonthlyTransactionSummary(transactions: monthlyTransactions);
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,8 +126,10 @@ class DashboardPage extends ConsumerWidget {
                   Expanded(
                     child: SummaryCard(
                       title: 'Thu nhập',
-                      amount:
-                          formatCurrency(summary.totalIncome, withSign: false),
+                      amount: formatCurrency(
+                        summary.totalIncome,
+                        withSign: false,
+                      ),
                       icon: Icons.trending_up,
                       accentColor: const Color(0xFF16A34A),
                       backgroundColor: const Color(0xFFF0FDF4),
@@ -127,8 +139,10 @@ class DashboardPage extends ConsumerWidget {
                   Expanded(
                     child: SummaryCard(
                       title: 'Chi tiêu',
-                      amount:
-                          formatCurrency(summary.totalExpense, withSign: false),
+                      amount: formatCurrency(
+                        summary.totalExpense,
+                        withSign: false,
+                      ),
                       icon: Icons.trending_down,
                       accentColor: const Color(0xFFEA580C),
                       backgroundColor: const Color(0xFFFFF7ED),

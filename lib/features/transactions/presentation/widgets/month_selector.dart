@@ -15,16 +15,25 @@ class MonthSelector extends StatelessWidget {
   final VoidCallback? onTapMonth;
 
   static const List<String> _months = [
-    'Tháng 1', 'Tháng 2', 'Tháng 3', 'Tháng 4',
-    'Tháng 5', 'Tháng 6', 'Tháng 7', 'Tháng 8',
-    'Tháng 9', 'Tháng 10', 'Tháng 11', 'Tháng 12',
+    'Tháng 1',
+    'Tháng 2',
+    'Tháng 3',
+    'Tháng 4',
+    'Tháng 5',
+    'Tháng 6',
+    'Tháng 7',
+    'Tháng 8',
+    'Tháng 9',
+    'Tháng 10',
+    'Tháng 11',
+    'Tháng 12',
   ];
 
-  String get _label => '${_months[selectedMonth.month - 1]} ${selectedMonth.year}';
+  String get _label =>
+      '${_months[selectedMonth.month - 1]} ${selectedMonth.year}';
 
   @override
   Widget build(BuildContext context) {
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       child: Row(

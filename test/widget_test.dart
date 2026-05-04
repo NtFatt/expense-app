@@ -135,7 +135,10 @@ void main() {
     appRouter.go('/transactions');
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('transaction_filter_search_field')), findsOneWidget);
+    expect(
+      find.byKey(const Key('transaction_filter_search_field')),
+      findsOneWidget,
+    );
     expect(find.byKey(const Key('month_selector_previous')), findsOneWidget);
     expect(find.byKey(const Key('month_selector_next')), findsOneWidget);
   });
@@ -180,9 +183,7 @@ void main() {
     expect(find.byKey(const Key('month_selector_label')), findsOneWidget);
   });
 
-  testWidgets('Search field accepts text input', (
-    WidgetTester tester,
-  ) async {
+  testWidgets('Search field accepts text input', (WidgetTester tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -196,7 +197,9 @@ void main() {
     appRouter.go('/transactions');
     await tester.pumpAndSettle();
 
-    final Finder searchField = find.byKey(const Key('transaction_filter_search_field'));
+    final Finder searchField = find.byKey(
+      const Key('transaction_filter_search_field'),
+    );
     await tester.enterText(searchField, 'lương');
     await tester.pumpAndSettle();
 
@@ -222,11 +225,19 @@ void main() {
     await tester.tap(find.byKey(const Key('transactions_add_transaction_fab')));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('add_transaction_amount_field')), findsOneWidget);
-    expect(find.byKey(const Key('add_transaction_submit_button')), findsOneWidget);
+    expect(
+      find.byKey(const Key('add_transaction_amount_field')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const Key('add_transaction_submit_button')),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('Dashboard shows month selector buttons', (WidgetTester tester) async {
+  testWidgets('Dashboard shows month selector buttons', (
+    WidgetTester tester,
+  ) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -277,7 +288,9 @@ void main() {
     appRouter.go('/');
     await tester.pumpAndSettle();
 
-    final label = tester.widget<Text>(find.byKey(const Key('dashboard_month_label')));
+    final label = tester.widget<Text>(
+      find.byKey(const Key('dashboard_month_label')),
+    );
     expect(label.data, contains('Tháng'));
   });
 
@@ -302,13 +315,17 @@ void main() {
       matching: find.byKey(const Key('month_selector_previous')),
     );
 
-    final labelBefore = tester.widget<Text>(find.byKey(const Key('dashboard_month_label')));
+    final labelBefore = tester.widget<Text>(
+      find.byKey(const Key('dashboard_month_label')),
+    );
     final labelBeforeData = labelBefore.data;
 
     await tester.tap(prevBtn.first);
     await tester.pumpAndSettle();
 
-    final labelAfter = tester.widget<Text>(find.byKey(const Key('dashboard_month_label')));
+    final labelAfter = tester.widget<Text>(
+      find.byKey(const Key('dashboard_month_label')),
+    );
     expect(labelAfter.data, isNot(equals(labelBeforeData)));
   });
 

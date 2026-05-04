@@ -25,7 +25,9 @@ void main() {
     });
 
     test('setMonth normalizes the month', () {
-      final controller = container.read(transactionFilterControllerProvider.notifier);
+      final controller = container.read(
+        transactionFilterControllerProvider.notifier,
+      );
 
       controller.setMonth(DateTime(2025, 7, 15, 14, 30));
 
@@ -34,7 +36,9 @@ void main() {
     });
 
     test('previousMonth moves back one month', () {
-      final controller = container.read(transactionFilterControllerProvider.notifier);
+      final controller = container.read(
+        transactionFilterControllerProvider.notifier,
+      );
 
       controller.setMonth(DateTime(2025, 6, 15));
       controller.previousMonth();
@@ -44,7 +48,9 @@ void main() {
     });
 
     test('previousMonth across January wraps to previous year', () {
-      final controller = container.read(transactionFilterControllerProvider.notifier);
+      final controller = container.read(
+        transactionFilterControllerProvider.notifier,
+      );
 
       controller.setMonth(DateTime(2025, 1, 15));
       controller.previousMonth();
@@ -54,7 +60,9 @@ void main() {
     });
 
     test('nextMonth moves forward one month', () {
-      final controller = container.read(transactionFilterControllerProvider.notifier);
+      final controller = container.read(
+        transactionFilterControllerProvider.notifier,
+      );
 
       controller.setMonth(DateTime(2025, 6, 15));
       controller.nextMonth();
@@ -64,7 +72,9 @@ void main() {
     });
 
     test('nextMonth across December wraps to next year', () {
-      final controller = container.read(transactionFilterControllerProvider.notifier);
+      final controller = container.read(
+        transactionFilterControllerProvider.notifier,
+      );
 
       controller.setMonth(DateTime(2025, 12, 15));
       controller.nextMonth();
@@ -74,7 +84,9 @@ void main() {
     });
 
     test('setTypeFilter updates type filter', () {
-      final controller = container.read(transactionFilterControllerProvider.notifier);
+      final controller = container.read(
+        transactionFilterControllerProvider.notifier,
+      );
 
       controller.setTypeFilter(TransactionTypeFilter.income);
 
@@ -83,7 +95,9 @@ void main() {
     });
 
     test('setSearchQuery trims input', () {
-      final controller = container.read(transactionFilterControllerProvider.notifier);
+      final controller = container.read(
+        transactionFilterControllerProvider.notifier,
+      );
 
       controller.setSearchQuery('  lương  ');
 
@@ -92,7 +106,9 @@ void main() {
     });
 
     test('clearSearch sets query to empty string', () {
-      final controller = container.read(transactionFilterControllerProvider.notifier);
+      final controller = container.read(
+        transactionFilterControllerProvider.notifier,
+      );
 
       controller.setSearchQuery('some query');
       controller.clearSearch();
@@ -102,7 +118,9 @@ void main() {
     });
 
     test('reset restores initial state', () {
-      final controller = container.read(transactionFilterControllerProvider.notifier);
+      final controller = container.read(
+        transactionFilterControllerProvider.notifier,
+      );
       final now = DateTime.now();
 
       controller.setMonth(DateTime(2024, 1));

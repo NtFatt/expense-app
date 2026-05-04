@@ -3,8 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final transactionFilterControllerProvider =
     NotifierProvider<TransactionFilterController, TransactionFilterState>(
-  TransactionFilterController.new,
-);
+      TransactionFilterController.new,
+    );
 
 class TransactionFilterController extends Notifier<TransactionFilterState> {
   @override

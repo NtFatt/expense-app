@@ -39,11 +39,15 @@ class MonthlyTransactionSummary {
   /// Returns category summaries sorted by amount descending.
   List<CategoryExpenseSummary> get expenseCategorySummaries {
     final entries = expenseByCategory.entries.toList()
-      ..sort((MapEntry<String, int> a, MapEntry<String, int> b) =>
-          b.value.compareTo(a.value));
+      ..sort(
+        (MapEntry<String, int> a, MapEntry<String, int> b) =>
+            b.value.compareTo(a.value),
+      );
     return entries
-        .map((MapEntry<String, int> e) =>
-            CategoryExpenseSummary(category: e.key, amount: e.value))
+        .map(
+          (MapEntry<String, int> e) =>
+              CategoryExpenseSummary(category: e.key, amount: e.value),
+        )
         .toList();
   }
 
@@ -57,10 +61,7 @@ class MonthlyTransactionSummary {
 
 /// A named pair of category name and total expense amount.
 class CategoryExpenseSummary {
-  const CategoryExpenseSummary({
-    required this.category,
-    required this.amount,
-  });
+  const CategoryExpenseSummary({required this.category, required this.amount});
 
   final String category;
   final int amount;

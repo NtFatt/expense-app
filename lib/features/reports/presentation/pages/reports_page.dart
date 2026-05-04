@@ -1,14 +1,72 @@
+import 'package:expense_app/features/reports/data/report_export_service_provider.dart';
+import 'package:expense_app/features/reports/domain/report_export_request.dart';
 import 'package:expense_app/features/reports/presentation/widgets/report_action_card.dart';
+import 'package:expense_app/features/transactions/presentation/controllers/transaction_controller.dart';
+import 'package:expense_app/features/transactions/presentation/controllers/transaction_filter_controller.dart';
 import 'package:expense_app/shared/widgets/app_bottom_navigation.dart';
 import 'package:expense_app/shared/widgets/app_scaffold.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ReportsPage extends StatelessWidget {
+class ReportsPage extends ConsumerStatefulWidget {
   const ReportsPage({super.key});
 
-  void _showComingSoon(BuildContext context, String featureName) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('$featureName đang được phát triển')),
+  @override
+  ConsumerState<ReportsPage> createState() => _ReportsPageState();
+}
+
+class _ReportsPageState extends ConsumerState<ReportsPage> {
+  bool _isExportingCsv = false;
+
+  void _showSnackBar(String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _onExportCsv() async {
+    if (_isExportingCsv) return;
+
+    final AsyncValue<TransactionState> state = ref.read(
+      transactionControllerProvider,
+    );
+
+    await state.when(
+      data: (TransactionState data) async {
+        if (data.isEmpty) {
+          _showSnackBar('Không có giao dịch để xuất.');
+          return;
+        }
+
+        setState(() => _isExportingCsv = true);
+        try {
+          final DateTime selectedMonth = ref
+              .read(transactionFilterControllerProvider)
+              .selectedMonth;
+
+          final ReportExportRequest request = ReportExportRequest(
+            transactions: data.transactions,
+            selectedMonth: selectedMonth,
+            generatedAt: DateTime.now(),
+          );
+
+          final service = ref.read(reportExportServiceProvider);
+          final result = await service.exportTransactionsCsv(request);
+          _showSnackBar(result.message);
+        } catch (e) {
+          _showSnackBar('Không thể xuất CSV. Vui lòng thử lại.');
+        } finally {
+          if (mounted) {
+            setState(() => _isExportingCsv = false);
+          }
+        }
+      },
+      loading: () {
+        _showSnackBar('Dữ liệu giao dịch đang tải, thử lại sau.');
+      },
+      error: (Object error, StackTrace stack) {
+        _showSnackBar('Không thể đọc dữ liệu giao dịch.');
+      },
     );
   }
 
@@ -29,8 +87,8 @@ class ReportsPage extends StatelessWidget {
             icon: Icons.table_chart_rounded,
             title: 'Xuất CSV',
             description: 'Tải danh sách giao dịch dạng bảng để xử lý tiếp.',
-            buttonLabel: 'Chuẩn bị xuất',
-            onPressed: () => _showComingSoon(context, 'Xuất CSV'),
+            buttonLabel: _isExportingCsv ? 'Đang xuất...' : 'Xuất CSV',
+            onPressed: _isExportingCsv ? () {} : _onExportCsv,
           ),
           const SizedBox(height: 16),
           ReportActionCard(
@@ -39,7 +97,7 @@ class ReportsPage extends StatelessWidget {
             description:
                 'Tạo báo cáo thu chi theo tháng để chia sẻ hoặc lưu trữ.',
             buttonLabel: 'Chuẩn bị xuất',
-            onPressed: () => _showComingSoon(context, 'Xuất PDF'),
+            onPressed: () => _showSnackBar('Xuất PDF đang được phát triển'),
           ),
           const SizedBox(height: 16),
           ReportActionCard(
@@ -48,7 +106,8 @@ class ReportsPage extends StatelessWidget {
             description:
                 'Chuẩn bị cho SQLite/Drift persistence ở các phase sau.',
             buttonLabel: 'Xem lộ trình',
-            onPressed: () => _showComingSoon(context, 'Sao lưu dữ liệu'),
+            onPressed: () =>
+                _showSnackBar('Sao lưu dữ liệu đang được phát triển'),
           ),
         ],
       ),

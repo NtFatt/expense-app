@@ -9,7 +9,7 @@
 - Current default repository: Platform-aware (`InMemoryTransactionRepository` on web, `DriftTransactionRepository` on native)
 - Persistence status: Drift enabled and verified on native (Windows/Android); web uses InMemory fallback via conditional imports
 - Current validation status: `flutter analyze` PASS, `flutter test` PASS (66 tests), `flutter run -d chrome` PASS, `flutter run -d windows` PASS (Phase 8C)
-- Last updated: `2026-05-03` (Phase 8 COMPLETE — 8A audit + 8B switching + 8C QA + 8D hardening/docs)
+- Last updated: `2026-05-04` (Phase 9A: export contracts ✅ · Phase 9B/9C/9D pending)
 
 ## 1. Status Legend
 
@@ -34,7 +34,7 @@
 | 6 | MVP UX Polish | `[x]` | Bottom nav, statistics, reports, polish UX các page chính | pub get/analyze/test/chrome pass | Chrome/web vẫn an toàn |
 | 7 | Filter/Search/Monthly View/Edit Transaction | `[x]` | Phase 7A–7D done (edit, filter/search UI, monthly dashboard, monthly statistics) | analyze/test/chrome pass for 7D | Phase 7 COMPLETE |
 | 8 | Enable SQLite/Drift Persistence | `[x]` | Drift enabled on native, verified on Windows, documented and hardened (8A–8D all DONE) | analyze/test/chrome/windows persistence QA pass | Phase 8 COMPLETE; next Phase 9 CSV/PDF Export or Phase 10 Android APK |
-| 9 | CSV/PDF Export | `[ ]` | Chưa implement export thật | Chưa chạy | ReportsPage vẫn là "coming soon" UI |
+| 9 | CSV/PDF Export | `[~]` | 9A architecture ✅ · 9B CSV export ✅ · 9C/9D pending | 9B: analyze/test/chrome pass | CSV native save works; PDF/export polish pending |
 | 10 | Android Toolchain + APK Build | `[ ]` | Chưa xử lý Android toolchain/APK | Chưa chạy | Hiện chưa ưu tiên |
 | 11 | Final QA + Demo Script | `[ ]` | Chưa làm checklist demo cuối | Chưa chạy | Để sau MVP ổn định |
 | 12 | Optional Cloud Sync/Auth | `[ ]` | Chưa bắt đầu | Chưa chạy | Ngoài scope hiện tại |
@@ -194,28 +194,22 @@
 - [x] Add Drift dependencies
 - [x] Create transactions table
 - [x] Create `AppDatabase`
-- [x] Generate Drift code
+- [x] Generate Drift code (`dart run build_runner build --delete-conflicting-outputs`)
 - [x] Create `DriftTransactionRepository`
-- [x] Enable Drift as default repository on native (Phase 8B)
-- [x] Persist transactions after reload on native (Phase 8C — VERIFIED)
-- [x] Native target QA (Phase 8C — VERIFIED on Windows)
-- [x] Migration strategy (Phase 8D — documented)
+- [x] Scaffold complete (enablement deferred to Phase 8B)
 
 **Validation:**
 - [x] `dart run build_runner build --delete-conflicting-outputs`
 - [x] `flutter analyze`
 - [x] `flutter test`
-- [x] Chrome safe because Drift is not default (web uses InMemory via conditional import)
+- [x] Chrome safe (Drift not default on web)
 
 **Notes:**
-- Drift scaffolded, enabled on native via Phase 8B conditional imports.
-- Phase 8B switched native default to `DriftTransactionRepository(AppDatabase())`.
+- Drift scaffolded and code-generated; enabled on native via Phase 8B conditional imports.
 - Web/Chrome remains on `InMemoryTransactionRepository` via `repository_factory_stub.dart`.
-- Persistence verified on Windows via Phase 8C manual QA: add/edit/delete all persist after restart.
-- Migration strategy documented in Phase 8D: bump `schemaVersion`, add `MigrationStrategy.onUpgrade`, regenerate with `build_runner`.
 
 **Next step:**
-- Phase 9 — CSV/PDF Export.
+- Phase 6 — MVP UX Polish.
 
 ### Phase 6 — MVP UX Polish
 
@@ -538,35 +532,161 @@
 - Phase 8 is now complete. All four sub-phases (8A/8B/8C/8D) are DONE.
 
 **Next step:**
-- Phase 9 — CSV/PDF Export (recommended next phase).
+- Phase 9 — CSV/PDF Export (Phase 9A: architecture & contracts ✅).
 
 ### Phase 9 — CSV/PDF Export
 
-**Status:** `[ ] NOT STARTED`
+**Status:** `[~] IN PROGRESS` (9A: architecture & contracts ✅ · 9B CSV export ✅ · 9C/9D: not started)
 **Goal:** Implement real report export.
 **Scope:** CSV export, PDF export, file save/share flow and success/failure UX.
 **Files touched/expected:** reports/export service files, repository/provider integrations, reports page actions.
 
+#### Phase 9A — Export Architecture & Contract
+
+**Status:** `[x] DONE`
+**Goal:** Design export domain contracts, service interface, file naming, and audit PDF font strategy. No real export implementation.
+
 **Checklist:**
-- [ ] Export transactions to CSV
-- [ ] Export monthly report to PDF
-- [ ] Add file save/share flow
-- [ ] Add export success/failure SnackBar
-- [ ] Use data from repository/provider
-- [ ] Ensure no fake export UI remains
+- [x] Audit `ReportsPage` and `ReportActionCard`
+- [x] Audit data sources: `transactionControllerProvider`, `transactionFilterControllerProvider`, `filterTransactionsByMonth`
+- [x] Create `ReportExportFormat` enum (`csv`, `pdf`)
+- [x] Create `ReportExportRequest` immutable model
+- [x] Create `ReportExportResult` immutable model
+- [x] Create `ReportExportService` abstract interface (no real implementation)
+- [x] Create `ReportFileNamer` pure-Dart utility
+- [x] Audit PDF font strategy for Vietnamese Unicode support
+- [x] Audit pubspec.yaml packages (no new packages added)
+- [x] Create `docs/phase-9-export-architecture.md`
+- [x] Verify `ReportsPage` is not polluted with export logic
+- [x] Run validation
+
+**Files created:**
+- `lib/features/reports/domain/report_export_format.dart`
+- `lib/features/reports/domain/report_export_request.dart`
+- `lib/features/reports/domain/report_export_result.dart`
+- `lib/features/reports/data/report_export_service.dart`
+- `lib/features/reports/data/report_file_namer.dart`
+- `docs/phase-9-export-architecture.md`
+
+**Notes:**
+- CSV export data source: `TransactionRepository.getTransactions()` via `transactionControllerProvider` (full unfiltered list).
+- PDF export data source: `filterTransactionsByMonth(transactions, selectedMonth)` using `transactionFilterControllerProvider.selectedMonth`.
+- No real CSV/PDF generation in 9A.
+- No file save in 9A.
+- `ReportsPage` buttons remain as "coming soon" SnackBar.
+- No Vietnamese Unicode font asset exists; TODO documented for Phase 9C.
+- `pdf` and `printing` packages not added; TODO documented for Phase 9C.
+- `path_provider` already in `pubspec.yaml` — available for native file save in 9B/9C.
+- `intl` already in `pubspec.yaml` — available for PDF date/number formatting.
+
+**Validation:**
+- [x] `flutter analyze` — PASS (Phase 9A)
+- [x] `flutter test` — PASS (Phase 9A)
+
+**Next step:**
+- Phase 9B — CSV Export Implementation.
+
+#### Phase 9B — CSV Export Implementation
+
+**Status:** `[x] DONE`
+**Goal:** Implement real CSV export with native file save and web-safe fallback.
+
+**Checklist:**
+- [x] Implement `CsvTransactionExporter` pure-Dart CSV serializer
+- [x] UTF-8 BOM prepended for Excel Vietnamese text support
+- [x] Correct CSV escaping (comma, quote, newline, carriage return)
+- [x] CSV includes signed_amount column
+- [x] Sort by transactionDate desc, then createdAt desc (no mutation)
+- [x] Implement `ReportFileWriter` abstraction with conditional imports
+- [x] Native writer: `path_provider` + `dart:io` `File` (excluded from web bundle)
+- [x] Stub writer: returns null on web (no crash)
+- [x] Implement `LocalReportExportService` (CSV: real; PDF: pending message)
+- [x] Wire `ReportsPage` CSV button to `reportExportServiceProvider`
+- [x] ReportsPage CSV card: loading guard, error state, empty state
+- [x] Keep PDF/Backup cards as coming soon
+- [x] Add 19 CSV exporter tests
+- [x] Add 9 `ReportFileNamer` tests
+- [x] Add 7 `LocalReportExportService` tests
+- [x] Run validation
+
+**Files created:**
+- `lib/features/reports/data/csv_transaction_exporter.dart`
+- `lib/features/reports/data/report_file_writer.dart`
+- `lib/features/reports/data/report_file_writer_stub.dart`
+- `lib/features/reports/data/report_file_writer_native.dart`
+- `lib/features/reports/data/local_report_export_service.dart`
+- `lib/features/reports/data/report_export_service_provider.dart`
+- `test/csv_transaction_exporter_test.dart`
+- `test/report_file_namer_test.dart`
+- `test/local_report_export_service_test.dart`
+
+**Files modified:**
+- `lib/features/reports/presentation/pages/reports_page.dart` (wired CSV export)
+
+**Notes:**
+- CSV uses full transaction list from `transactionControllerProvider`.
+- Native save: `getApplicationDocumentsDirectory()` + `File.writeAsBytes`.
+- Web: `report_file_writer_stub.dart` returns `null`; service returns message "chưa hỗ trợ".
+- PDF export remains Phase 9C (returns pending message from service).
+- Backup remains out of Phase 9 scope.
+- No new packages added.
+- `dart:io` is excluded from web bundle via conditional imports.
+
+**Validation:**
+- [x] `flutter analyze` — PASS (no issues)
+- [x] `flutter test` — PASS (103 tests: 66 original + 37 new)
+- [x] `flutter run -d chrome --web-run-headless --no-resident` — PASS (web fallback safe)
+- [ ] `flutter run -d windows` manual CSV save smoke — NOT RUN (Cursor environment)
+
+**Next step:**
+- Phase 9C — PDF Export Implementation.
+
+#### Phase 9C — PDF Export Implementation
+
+**Status:** `[ ] NOT STARTED`
+**Goal:** Implement real PDF export with Vietnamese Unicode font support.
+
+**Checklist:**
+- [ ] Add `pdf` and `printing` packages to `pubspec.yaml`
+- [ ] Acquire OFL-licensed Vietnamese Unicode font (e.g. Noto Sans, DejaVu Sans)
+- [ ] Place font `.ttf` in `assets/fonts/` and register in `pubspec.yaml`
+- [ ] Implement PDF generation using `MonthlyTransactionSummary` and category breakdown
+- [ ] Implement native file save via `path_provider`
+- [ ] Wire `ReportsPage` PDF button to service
+- [ ] Add unit tests for PDF generation
+- [ ] `flutter analyze` and `flutter test` pass
 
 **Validation:**
 - [ ] `flutter analyze`
 - [ ] `flutter test`
-- [ ] manual export test
 
 **Notes:**
-- `ReportsPage` currently shows "coming soon" SnackBar for all export actions.
-- Phase 8C is now complete — Phase 9 can proceed.
-- Export depends on real data from repository (Drift on native, InMemory on web).
+- TODO (9C): Add Vietnamese Unicode font asset — do NOT auto-download at runtime.
+- TODO (9C): Register font in `pubspec.yaml` under `flutter/fonts` section.
+- TODO (9C): Load font in PDF generator using `pdf` package Font API.
 
 **Next step:**
-- Phase 9: Start CSV/PDF export implementation.
+- Phase 9D — Export UX & Polish.
+
+#### Phase 9D — Export UX & Polish
+
+**Status:** `[ ] NOT STARTED`
+**Goal:** Polish export experience: SnackBar feedback, web download, error handling.
+
+**Checklist:**
+- [ ] Add success/error `SnackBar` UX after export
+- [ ] Implement web download flow (browser download APIs)
+- [ ] Add optional share functionality on mobile (`printing` package)
+- [ ] Audit error paths: disk full, permission denied, no transactions
+- [ ] `flutter analyze` and `flutter test` pass
+
+**Validation:**
+- [ ] `flutter analyze`
+- [ ] `flutter test`
+- [ ] Web export smoke test
+
+**Next step:**
+- Phase 10 — Android Toolchain + APK Build.
 
 ### Phase 10 — Android Toolchain + APK Build
 
@@ -689,11 +809,21 @@
 | **2026-05-03** | **`flutter test`** | **PASS** | **Phase 8D: 66 tests passed (no regressions)** |
 | **2026-05-03** | **`flutter run -d chrome --web-run-headless --no-resident`** | **PASS** | **Phase 8D: web fallback safe** |
 | **2026-05-03** | **Docs created** | **PASS** | **Phase 8D: `PHASE_8D_PERSISTENCE_HARDENING.md` + `README.md` updated** |
+| **2026-05-04** | **`flutter analyze`** | **PASS** | **Phase 9A: no issues found (5 new export contract files)** |
+| **2026-05-04** | **`flutter test`** | **PASS** | **Phase 9A: 66 tests passed (no regressions)** |
+| **2026-05-04** | **Docs created** | **PASS** | **Phase 9A: export contracts + architecture doc + checklist updated** |
+| **2026-05-04** | **`flutter analyze`** | **PASS** | **Phase 9B: 0 issues (CsvTransactionExporter, file writer, service, ReportsPage wired)** |
+| **2026-05-04** | **`flutter test`** | **PASS** | **Phase 9B: 103 tests pass (66 original + 37 new: csv exporter + file namer + service)** |
+| **2026-05-04** | **`flutter run -d chrome --web-run-headless --no-resident`** | **PASS** | **Phase 9B: web fallback safe — CSV export returns null path message on web** |
+| **2026-05-04** | **`flutter run -d windows`** | **NOT RUN** | **Phase 9B: native CSV save not manually smoke-tested in Cursor environment** |
 
 ## 5. Current Risks / Technical Notes
 
 - Android toolchain chưa hoàn chỉnh: thiếu cmdline-tools/licenses. Chưa chạy trên Android (Phase 10). Persistence trên Android chưa verified.
-- Export CSV/PDF/backup vẫn là "coming soon" UI, chưa implement thật (Phase 9).
+- CSV export đã implement (Phase 9B ✅); file save trên native qua `path_provider` + `dart:io`.
+- Web CSV export: chưa có browser download — Phase 9D cần implement web download.
+- PDF export chưa có Vietnamese Unicode font — Phase 9C cần thêm OFL-licensed font asset vào `assets/fonts/`.
+- `pdf` / `printing` packages chưa thêm vào `pubspec.yaml` — Phase 9C cần thêm.
 - Dashboard và Statistics dùng monthly view.
 - 15 widget tests override `transactionRepositoryProvider` với `InMemoryTransactionRepository` để chạy trên web và tránh native DB.
 - Web persistence là InMemory theo thiết kế — không phải bug.
@@ -703,11 +833,12 @@
 
 ### Immediate Next Step
 
-- Phase 9 — CSV/PDF Export: implement real export for CSV and PDF from the ReportsPage, pulling data from the repository.
+- Phase 9C — PDF Export Implementation: add `pdf`/`printing` packages, acquire Vietnamese Unicode font, implement PDF monthly report generation.
 
-**Alternative:** Phase 10 — Android Toolchain + APK Build if mobile is the priority.
+**Alternative:** Phase 9D — Export UX & Web Download (after Phase 9C PDF is done).
 
 ### Last Commits
 
+- `[pending]` — Phase 9B: implement CSV export (ready to commit)
 - `7c327d2` — `docs(persistence): complete phase 8 hardening and documentation` — 2026-05-03 (Phase 8D)
 - `72a8d4d` — `docs(persistence): mark phase 8c native qa complete` — 2026-05-03 (Phase 8C)

@@ -93,9 +93,9 @@ class TransactionsPage extends ConsumerWidget {
         data: (TransactionState data) {
           final List<TransactionModel> filteredTransactions =
               applyTransactionFilters(
-            transactions: data.transactions,
-            filter: filter,
-          );
+                transactions: data.transactions,
+                filter: filter,
+              );
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,8 +139,7 @@ class TransactionsPage extends ConsumerWidget {
                   onActionPressed: filterCtrl.clearNonMonthFilters,
                 )
               else
-                for (final TransactionModel transaction
-                    in filteredTransactions)
+                for (final TransactionModel transaction in filteredTransactions)
                   TransactionTile(
                     transaction: transaction,
                     trailing: Row(

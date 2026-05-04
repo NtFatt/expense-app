@@ -3,10 +3,7 @@ import 'package:expense_app/features/transactions/domain/transaction_model.dart'
 import 'package:flutter/material.dart';
 
 class FilteredTransactionsSummary extends StatelessWidget {
-  const FilteredTransactionsSummary({
-    super.key,
-    required this.transactions,
-  });
+  const FilteredTransactionsSummary({super.key, required this.transactions});
 
   final List<TransactionModel> transactions;
 
