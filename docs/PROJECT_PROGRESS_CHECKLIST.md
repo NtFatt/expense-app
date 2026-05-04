@@ -8,8 +8,8 @@
 - Current run target: Chrome/web
 - Current default repository: Platform-aware (`InMemoryTransactionRepository` on web, `DriftTransactionRepository` on native)
 - Persistence status: Drift scaffolded and verified on Windows (Phase 8C); native uses Drift as active repository; web uses InMemory fallback via conditional imports
-- Current validation status: `flutter analyze` PASS, `flutter test` PASS (133 tests), `flutter run -d chrome` PASS, `flutter build windows --release` PASS
-- Last updated: `2026-05-05` (Phase 9C `[x] DONE` · 133 tests pass · Noto Sans v2.015 font added · Windows release built)
+- Current validation status: `flutter analyze` PASS (3 info), `flutter test` PASS (133 tests), `flutter run -d chrome` PASS, `flutter build windows --release` PASS
+- Last updated: `2026-05-05` (Phase 9C `[x] DONE` · 133 tests · Noto Sans v2.015 font committed · Windows release built)
 
 ## 1. Status Legend
 
@@ -34,7 +34,7 @@
 | 6 | MVP UX Polish | `[x]` | Bottom nav, statistics, reports, polish UX các page chính | pub get/analyze/test/chrome pass | Chrome/web vẫn an toàn |
 | 7 | Filter/Search/Monthly View/Edit Transaction | `[x]` | Phase 7A–7D done (edit, filter/search UI, monthly dashboard, monthly statistics) | analyze/test/chrome pass for 7D | Phase 7 COMPLETE |
 | 8 | Enable SQLite/Drift Persistence | `[x]` | Drift enabled on native, verified on Windows, documented and hardened (8A–8D all DONE) | analyze/test/chrome/windows persistence QA pass | Phase 8 COMPLETE; next Phase 9 CSV/PDF Export or Phase 10 Android APK |
-| 9 | CSV/PDF Export | `[~]` | 9A ✅ · 9B ✅ · 9C ✅ (133 tests · Noto Sans font · Windows release built) · 9D NOT STARTED | 9C: 133 tests | Phase 9C complete; next Phase 9D web download |
+| 9 | CSV/PDF Export | `[~]` | 9A ✅ · 9B ✅ · 9C ✅ · 9D NOT STARTED | 133 tests | Phase 9C complete; next Phase 9D web browser download |
 | 10 | Android Toolchain + APK Build | `[ ]` | Chưa xử lý Android toolchain/APK | Chưa chạy | Hiện chưa ưu tiên |
 | 11 | Final QA + Demo Script | `[ ]` | Chưa làm checklist demo cuối | Chưa chạy | Để sau MVP ổn định |
 | 12 | Optional Cloud Sync/Auth | `[ ]` | Chưa bắt đầu | Chưa chạy | Ngoài scope hiện tại |
@@ -729,20 +729,29 @@
 
 #### Phase 9D — Export UX & Polish
 
-**Status:** `[ ] NOT STARTED`
-**Goal:** Polish export experience: SnackBar feedback, web download, error handling.
+**Status:** `[~] IN PROGRESS`
+**Goal:** Polish export experience: SnackBar feedback (done), web browser download, share on mobile.
 
 **Checklist:**
-- [ ] Add success/error `SnackBar` UX after export
-- [ ] Implement web download flow (browser download APIs)
-- [ ] Add optional share functionality on mobile (`printing` package)
+- [x] Add success/error `SnackBar` UX after export (CSV and PDF wired in `ReportsPage`)
+- [ ] Implement web download flow (browser download APIs — currently stub returns unsupported)
+- [ ] Add optional share functionality on mobile (`printing` package share API)
 - [ ] Audit error paths: disk full, permission denied, no transactions
 - [ ] `flutter analyze` and `flutter test` pass
+
+**Files touched:**
+- `lib/features/reports/presentation/pages/reports_page.dart` (SnackBar wired for CSV and PDF)
+
+**Notes:**
+- SnackBar feedback for CSV and PDF is implemented via `_showSnackBar(result.message)` in `ReportsPage`.
+- Empty state, loading state, and error state are all handled for both CSV and PDF.
+- Web browser download still returns "unsupported" message via `report_file_writer_stub.dart`.
+- Native CSV and PDF Save As dialogs work on Windows/macOS/Linux.
 
 **Validation:**
 - [ ] `flutter analyze`
 - [ ] `flutter test`
-- [ ] Web export smoke test
+- [ ] Web browser download smoke test
 
 **Next step:**
 - Phase 10 — Android Toolchain + APK Build.
@@ -880,9 +889,12 @@
 | **2026-05-04** | **`flutter analyze`** | **PASS** | **Phase 9B CSV Save As dialog fix: 0 issues (`file_selector` added, `ReportFileWriteResult` introduced)** |
 | **2026-05-04** | **`flutter test`** | **PASS** | **Phase 9B: 115 tests pass (6 new write result + 6 updated service tests)** |
 | **2026-05-04** | **`flutter run -d chrome --web-run-headless --no-resident`** | **PASS** | **Phase 9B: web fallback safe — stub returns `unsupported`** |
-| **2026-05-05** | **`flutter analyze`** | **PASS** | **Phase 9C: 0 errors (3 info deprecations only)** |
+| **2026-05-05** | **`flutter analyze`** | **PASS** | **Phase 9C: 0 errors (3 info deprecations only: `Table.fromTextArray` → use `TableHelper.fromTextArray()`)** |
 | **2026-05-05** | **`flutter test`** | **PASS** | **Phase 9C: 133 tests pass (123 original + 10 new builder tests)** |
-| **2026-05-05** | **`flutter run -d chrome --web-run-headless --no-resident`** | **PASS** | **Phase 9C: web fallback safe** |
+| **2026-05-05** | **`flutter run -d chrome --web-run-headless --no-resident`** | **PASS** | **Phase 9C: web fallback safe; stub writer returns `unsupported` message** |
+| **2026-05-05** | **`flutter build windows --release`** | **PASS** | **Phase 9C: release exe built with Noto Sans font assets; launches and exits cleanly** |
+| **2026-05-05** | **`flutter analyze`** | **PASS** | **Current state re-validation: 3 info deprecations only, no errors** |
+| **2026-05-05** | **`flutter test`** | **PASS** | **Current state re-validation: 133 tests passed** |
 
 ## 5. Current Risks / Technical Notes
 
@@ -904,5 +916,8 @@
 
 ### Last Commits
 
+- `585df8a` — `feat(reports): add Noto Sans font assets for PDF Vietnamese rendering` — 2026-05-05
+- `0b05e20` — `feat(reports): implement monthly PDF export scaffold (Phase 9C)` — 2026-05-05
+- `cc8249f` — `docs(progress): update date to 2026-05-05, stale commits corrected` — 2026-05-05
 - `7d9c7c0` — `docs(progress): record Phase 9B windows release smoke and debug blocker` — 2026-05-04
-- `68781fc` — `fix(reports): prompt for CSV export destination via Save As dialog` — 2026-05-04 (Phase 9B Save As fix)
+- `68781fc` — `fix(reports): prompt for CSV export destination via Save As dialog` — 2026-05-04
