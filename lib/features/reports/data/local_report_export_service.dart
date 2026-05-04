@@ -1,6 +1,8 @@
 import 'dart:convert';
 
 import 'package:expense_app/features/reports/data/csv_transaction_exporter.dart';
+import 'package:expense_app/features/reports/data/monthly_report_data_builder.dart';
+import 'package:expense_app/features/reports/data/pdf_monthly_report_exporter.dart';
 import 'package:expense_app/features/reports/data/report_file_namer.dart';
 import 'package:expense_app/features/reports/data/report_file_write_result.dart';
 import 'package:expense_app/features/reports/data/report_file_writer.dart';
@@ -13,17 +15,23 @@ import 'report_export_service.dart';
 /// Concrete implementation of [ReportExportService] for native platforms.
 ///
 /// The CSV leg opens a Save As dialog so the user picks the destination. The
-/// PDF leg returns a pending message (deferred to Phase 9C). This class lives
-/// in the [data] layer and has no `BuildContext` or Flutter UI dependencies.
+/// PDF leg builds a monthly report and opens a Save As dialog too. This class
+/// lives in the [data] layer and has no `BuildContext` or Flutter UI dependencies.
 class LocalReportExportService implements ReportExportService {
   const LocalReportExportService({
     required CsvTransactionExporter csvExporter,
     required ReportFileWriter fileWriter,
+    required MonthlyReportDataBuilder monthlyReportDataBuilder,
+    required MonthlyPdfExporter pdfExporter,
   }) : _csvExporter = csvExporter,
-       _fileWriter = fileWriter;
+       _fileWriter = fileWriter,
+       _monthlyReportDataBuilder = monthlyReportDataBuilder,
+       _pdfExporter = pdfExporter;
 
   final CsvTransactionExporter _csvExporter;
   final ReportFileWriter _fileWriter;
+  final MonthlyReportDataBuilder _monthlyReportDataBuilder;
+  final MonthlyPdfExporter _pdfExporter;
 
   @override
   Future<ReportExportResult> exportTransactionsCsv(
@@ -71,11 +79,52 @@ class LocalReportExportService implements ReportExportService {
     final String fileName = ReportFileNamer.monthlyPdfName(
       request.selectedMonth,
     );
-    return ReportExportResult(
-      format: ReportExportFormat.pdf,
-      fileName: fileName,
-      filePath: null,
-      message: 'Xuất PDF sẽ được triển khai ở Phase 9C.',
+
+    final monthlyData = _monthlyReportDataBuilder.build(
+      transactions: request.transactions,
+      selectedMonth: request.selectedMonth,
+      generatedAt: request.generatedAt,
     );
+
+    List<int> pdfBytes;
+    try {
+      pdfBytes = await _pdfExporter.generate(monthlyData);
+    } catch (e) {
+      return ReportExportResult(
+        format: ReportExportFormat.pdf,
+        fileName: fileName,
+        filePath: null,
+        message: 'Không thể tạo PDF. Vui lòng thử lại.',
+      );
+    }
+
+    final writeResult = await _fileWriter.writeBytes(
+      fileName: fileName,
+      bytes: pdfBytes,
+    );
+
+    switch (writeResult.status) {
+      case ReportFileWriteStatus.saved:
+        return ReportExportResult(
+          format: ReportExportFormat.pdf,
+          fileName: fileName,
+          filePath: writeResult.filePath,
+          message: 'Đã xuất PDF: $fileName',
+        );
+      case ReportFileWriteStatus.cancelled:
+        return ReportExportResult(
+          format: ReportExportFormat.pdf,
+          fileName: fileName,
+          filePath: null,
+          message: 'Đã hủy xuất PDF.',
+        );
+      case ReportFileWriteStatus.unsupported:
+        return ReportExportResult(
+          format: ReportExportFormat.pdf,
+          fileName: fileName,
+          filePath: null,
+          message: 'Xuất PDF chưa hỗ trợ lưu file trên nền tảng này.',
+        );
+    }
   }
 }

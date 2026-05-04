@@ -17,6 +17,7 @@ class ReportsPage extends ConsumerStatefulWidget {
 
 class _ReportsPageState extends ConsumerState<ReportsPage> {
   bool _isExportingCsv = false;
+  bool _isExportingPdf = false;
 
   void _showSnackBar(String message) {
     ScaffoldMessenger.of(
@@ -70,6 +71,47 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
     );
   }
 
+  Future<void> _onExportPdf() async {
+    if (_isExportingPdf) return;
+
+    final AsyncValue<TransactionState> state = ref.read(
+      transactionControllerProvider,
+    );
+
+    await state.when(
+      data: (TransactionState data) async {
+        setState(() => _isExportingPdf = true);
+        try {
+          final DateTime selectedMonth = ref
+              .read(transactionFilterControllerProvider)
+              .selectedMonth;
+
+          final ReportExportRequest request = ReportExportRequest(
+            transactions: data.transactions,
+            selectedMonth: selectedMonth,
+            generatedAt: DateTime.now(),
+          );
+
+          final service = ref.read(reportExportServiceProvider);
+          final result = await service.exportMonthlyPdf(request);
+          _showSnackBar(result.message);
+        } catch (e) {
+          _showSnackBar('Không thể xuất PDF. Vui lòng thử lại.');
+        } finally {
+          if (mounted) {
+            setState(() => _isExportingPdf = false);
+          }
+        }
+      },
+      loading: () {
+        _showSnackBar('Dữ liệu giao dịch đang tải, thử lại sau.');
+      },
+      error: (Object error, StackTrace stack) {
+        _showSnackBar('Không thể đọc dữ liệu giao dịch.');
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
@@ -96,8 +138,8 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
             title: 'Xuất PDF',
             description:
                 'Tạo báo cáo thu chi theo tháng để chia sẻ hoặc lưu trữ.',
-            buttonLabel: 'Chuẩn bị xuất',
-            onPressed: () => _showSnackBar('Xuất PDF đang được phát triển'),
+            buttonLabel: _isExportingPdf ? 'Đang xuất...' : 'Xuất PDF',
+            onPressed: _isExportingPdf ? () {} : _onExportPdf,
           ),
           const SizedBox(height: 16),
           ReportActionCard(

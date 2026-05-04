@@ -8,8 +8,8 @@
 - Current run target: Chrome/web
 - Current default repository: Platform-aware (`InMemoryTransactionRepository` on web, `DriftTransactionRepository` on native)
 - Persistence status: Drift scaffolded and verified on Windows (Phase 8C); native uses Drift as active repository; web uses InMemory fallback via conditional imports
-- Current validation status: `flutter analyze` PASS, `flutter test` PASS (115 tests), `flutter run -d chrome` PASS
-- Last updated: `2026-05-05` (Phase 9B CSV Save As dialog: 115 tests pass · `file_selector` added · Phase 9C/9D NOT STARTED)
+- Current validation status: `flutter analyze` PASS, `flutter test` PASS (133 tests), `flutter run -d chrome` PASS
+- Last updated: `2026-05-05` (Phase 9C PDF Export: 133 tests pass · `pdf`/`printing` added · font asset MISSING → `[R] REVIEW`)
 
 ## 1. Status Legend
 
@@ -34,7 +34,7 @@
 | 6 | MVP UX Polish | `[x]` | Bottom nav, statistics, reports, polish UX các page chính | pub get/analyze/test/chrome pass | Chrome/web vẫn an toàn |
 | 7 | Filter/Search/Monthly View/Edit Transaction | `[x]` | Phase 7A–7D done (edit, filter/search UI, monthly dashboard, monthly statistics) | analyze/test/chrome pass for 7D | Phase 7 COMPLETE |
 | 8 | Enable SQLite/Drift Persistence | `[x]` | Drift enabled on native, verified on Windows, documented and hardened (8A–8D all DONE) | analyze/test/chrome/windows persistence QA pass | Phase 8 COMPLETE; next Phase 9 CSV/PDF Export or Phase 10 Android APK |
-| 9 | CSV/PDF Export | `[~]` | 9A architecture ✅ · 9B CSV export ✅ (Save As dialog) · 9C/9D NOT STARTED | 9B: 115 tests pass | CSV native uses Save As dialog; PDF NOT IMPLEMENTED; `pdf`/`printing` not added |
+| 9 | CSV/PDF Export | `[~]` | 9A ✅ · 9B ✅ · 9C scaffold ✅ (font MISSING → `[R] REVIEW`) · 9D NOT STARTED | 9C: 133 tests pass | PDF code scaffolded; font asset MISSING |
 | 10 | Android Toolchain + APK Build | `[ ]` | Chưa xử lý Android toolchain/APK | Chưa chạy | Hiện chưa ưu tiên |
 | 11 | Final QA + Demo Script | `[ ]` | Chưa làm checklist demo cuối | Chưa chạy | Để sau MVP ổn định |
 | 12 | Optional Cloud Sync/Auth | `[ ]` | Chưa bắt đầu | Chưa chạy | Ngoài scope hiện tại |
@@ -653,30 +653,79 @@
 
 #### Phase 9C — PDF Export Implementation
 
-**Status:** `[ ] NOT STARTED`
-**Goal:** Implement real PDF export with Vietnamese Unicode font support.
+**Status:** `[R] REVIEW` (implementation complete; awaiting font asset and manual smoke)
+**Goal:** Implement real monthly PDF export with Vietnamese Unicode font support.
+**Blocker:** Vietnamese Unicode font `.ttf` file missing from `assets/fonts/`. Without it, PDF generation throws at runtime. Once user provides font, Phase 9C can be marked `[x] DONE` after manual smoke.
 
 **Checklist:**
-- [ ] Add `pdf` and `printing` packages to `pubspec.yaml`
-- [ ] Acquire OFL-licensed Vietnamese Unicode font (e.g. Noto Sans, DejaVu Sans)
-- [ ] Place font `.ttf` in `assets/fonts/` and register in `pubspec.yaml`
-- [ ] Implement PDF generation using `MonthlyTransactionSummary` and category breakdown
-- [ ] Implement native file save via `path_provider`
-- [ ] Wire `ReportsPage` PDF button to service
-- [ ] Add unit tests for PDF generation
-- [ ] `flutter analyze` and `flutter test` pass
+- [x] Add `pdf` and `printing` packages to `pubspec.yaml`
+- [ ] Acquire OFL-licensed Vietnamese Unicode font (e.g. Noto Sans, DejaVu Sans) → **BLOCKER**
+- [x] Create `assets/fonts/README.md` with font acquisition instructions
+- [x] Register `assets/fonts/` in `pubspec.yaml`
+- [x] Create `MonthlyReportData` domain model
+- [x] Create `MonthlyReportDataBuilder`
+- [x] Create `PdfFontLoader` and `PdfFontBundle`
+- [x] Create `ReportFormatters` (pure-Dart, no BuildContext)
+- [x] Create `PdfMonthlyReportExporter` with `MonthlyPdfExporter` interface
+- [x] PDF includes: title, overview, category breakdown, transaction table, generatedAt
+- [x] PDF handles empty month / no-expense month gracefully
+- [x] PDF uses Save As dialog via existing `ReportFileWriter`
+- [x] Update `LocalReportExportService` with real PDF leg
+- [x] Update `reportExportServiceProvider` with PDF dependencies
+- [x] Wire `ReportsPage` PDF button to real export (with loading guard)
+- [x] Native writer accepts any file type (removed CSV-only type group restriction)
+- [x] Keep CSV behavior intact
+- [x] Keep Backup as coming soon
+- [x] Add 10 `MonthlyReportDataBuilder` tests
+- [x] Add 9 PDF-specific `LocalReportExportService` tests
+- [x] Run validation
 
-**Validation:**
-- [ ] `flutter analyze`
-- [ ] `flutter test`
+**Files created:**
+- `assets/fonts/README.md`
+- `lib/features/reports/domain/monthly_report_data.dart`
+- `lib/features/reports/data/monthly_report_data_builder.dart`
+- `lib/features/reports/data/pdf_font_loader.dart`
+- `lib/features/reports/data/pdf_monthly_report_exporter.dart`
+- `lib/features/reports/data/report_formatters.dart`
+- `test/monthly_report_data_builder_test.dart`
+
+**Files modified:**
+- `pubspec.yaml` (+ `pdf: ^3.12.0`, `printing: ^5.14.3`, `assets/fonts/` entry)
+- `lib/features/reports/data/local_report_export_service.dart` (real PDF leg)
+- `lib/features/reports/data/report_export_service_provider.dart` (PDF deps injected)
+- `lib/features/reports/data/report_file_writer_native.dart` (removed CSV-only type group)
+- `lib/features/reports/presentation/pages/reports_page.dart` (wired PDF button)
+- `test/local_report_export_service_test.dart` (+ 9 PDF-specific tests)
 
 **Notes:**
-- TODO (9C): Add Vietnamese Unicode font asset — do NOT auto-download at runtime.
-- TODO (9C): Register font in `pubspec.yaml` under `flutter/fonts` section.
-- TODO (9C): Load font in PDF generator using `pdf` package Font API.
+- PDF generation code is complete and compiles clean (3 info-level deprecation warnings only).
+- `MonthlyPdfExporter` abstract interface enables fake implementations for testing.
+- `PdfFontLoader` loads Noto Sans from `assets/fonts/` via `rootBundle.load()`.
+- Font asset is the sole blocker — see `assets/fonts/README.md` for acquisition instructions.
+- PDF content: monthly title, 4-row overview table, category breakdown with percentages, transaction table with 5 columns, generated-at footer.
+- Empty month shows placeholder message; no-expense month shows placeholder; no divide-by-zero.
+- Native PDF export opens Save As dialog via `file_selector`.
+- Web returns unsupported message (browser download deferred to Phase 9D).
+- Backup remains out of scope.
+
+**Validation:**
+- [x] `flutter pub get` — PASS
+- [x] `dart format lib test` — PASS
+- [x] `flutter analyze` — PASS (3 info: `Table.fromTextArray` deprecation only)
+- [x] `flutter test` — PASS (133 tests: 123 original + 10 new builder tests)
+- [x] `flutter run -d chrome --web-run-headless --no-resident` — PASS
+- [ ] `flutter build windows --release` — NOT RUN (LNK1168 debug blocker persists)
+- [ ] Manual Windows PDF Save As smoke — NOT RUN (requires font asset + native run)
+
+**Font Blocker Resolution:**
+1. Download `NotoSans-Regular.ttf` and `NotoSans-Bold.ttf` from https://fonts.google.com/specimen/Noto+Sans (OFL license).
+2. Place in `assets/fonts/`.
+3. Run `flutter pub get`.
+4. Run `flutter build windows --release`.
+5. Manual smoke: Reports → Xuất PDF → pick location → verify PDF opens with Vietnamese text.
 
 **Next step:**
-- Phase 9D — Export UX & Polish.
+- Phase 9D — Export UX & Web Download (after font asset is provided and manual smoke passes).
 
 #### Phase 9D — Export UX & Polish
 
@@ -831,17 +880,20 @@
 | **2026-05-04** | **`flutter analyze`** | **PASS** | **Phase 9B CSV Save As dialog fix: 0 issues (`file_selector` added, `ReportFileWriteResult` introduced)** |
 | **2026-05-04** | **`flutter test`** | **PASS** | **Phase 9B: 115 tests pass (6 new write result + 6 updated service tests)** |
 | **2026-05-04** | **`flutter run -d chrome --web-run-headless --no-resident`** | **PASS** | **Phase 9B: web fallback safe — stub returns `unsupported`** |
-| **2026-05-05** | **`flutter analyze`** | **PASS** | **Current state re-validation: no issues found** |
-| **2026-05-05** | **`flutter test`** | **PASS** | **Current state re-validation: 115 tests pass (no regressions)** |
+| **2026-05-05** | **`flutter analyze`** | **PASS** | **Phase 9C: 0 errors (3 info deprecations only)** |
+| **2026-05-05** | **`flutter test`** | **PASS** | **Phase 9C: 133 tests pass (123 original + 10 new builder tests)** |
+| **2026-05-05** | **`flutter run -d chrome --web-run-headless --no-resident`** | **PASS** | **Phase 9C: web fallback safe** |
 
 ## 5. Current Risks / Technical Notes
 
 - Android toolchain chưa hoàn chỉnh: thiếu cmdline-tools/licenses. Chưa chạy trên Android (Phase 10). Persistence trên Android chưa verified.
-- CSV export đã implement với Save As dialog (Phase 9B ✅); native user tự chọn nơi lưu; web trả unsupported message.
-- Native CSV Save As manual smoke test: cần chạy thủ công trên Windows (`flutter run -d windows`).
-- Web CSV export: chưa có browser download — Phase 9D cần implement web download.
-- PDF export chưa có Vietnamese Unicode font — Phase 9C cần thêm OFL-licensed font asset vào `assets/fonts/`.
-- `pdf` / `printing` packages chưa thêm vào `pubspec.yaml` — Phase 9C cần thêm.
+- Native CSV Save As: đã implement (Phase 9B ✅); manual smoke test vẫn chưa chạy thủ công trong Cursor.
+- Native PDF Save As: code scaffolded ✅; font asset MISSING → Phase 9C ở `[R] REVIEW`.
+- Web PDF export: returns unsupported message (browser download deferred to Phase 9D).
+- Web CSV export: returns unsupported message (browser download deferred to Phase 9D).
+- Vietnamese Unicode font asset MISSING — sole blocker for Phase 9C `[x] DONE`. Xem `assets/fonts/README.md`.
+- `pdf` / `printing` packages đã thêm vào `pubspec.yaml` (Phase 9C ✅).
+- `flutter run -d windows` debug build LNK1168: Windows Defender locks debug exe during linking. Use `flutter build windows --release` for native smoke.
 - Dashboard và Statistics dùng monthly view.
 - 15 widget tests override `transactionRepositoryProvider` với `InMemoryTransactionRepository` để chạy trên web và tránh native DB.
 - Web persistence là InMemory theo thiết kế — không phải bug.
@@ -851,9 +903,13 @@
 
 ### Immediate Next Step
 
-- Phase 9C — PDF Export Implementation: add `pdf`/`printing` packages, acquire Vietnamese Unicode font, implement PDF monthly report generation.
-
-**Alternative:** Phase 9D — Export UX & Web Download (after Phase 9C PDF is done).
+1. **Font asset (required for Phase 9C DONE):**
+   - Download Noto Sans from https://fonts.google.com/specimen/Noto+Sans (OFL license).
+   - Place `NotoSans-Regular.ttf` and `NotoSans-Bold.ttf` in `assets/fonts/`.
+   - Run `flutter pub get` && `flutter build windows --release`.
+   - Manual smoke: Reports → Xuất PDF → pick location → verify PDF opens.
+2. **After font smoke passes:** Mark Phase 9C `[x] DONE` in checklist.
+3. **Then Phase 9D:** Export UX & Web Download (browser download for web CSV/PDF).
 
 ### Last Commits
 

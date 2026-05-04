@@ -2,8 +2,11 @@ import 'dart:convert';
 
 import 'package:expense_app/features/reports/data/csv_transaction_exporter.dart';
 import 'package:expense_app/features/reports/data/local_report_export_service.dart';
+import 'package:expense_app/features/reports/data/monthly_report_data_builder.dart';
+import 'package:expense_app/features/reports/data/pdf_monthly_report_exporter.dart';
 import 'package:expense_app/features/reports/data/report_file_write_result.dart';
 import 'package:expense_app/features/reports/data/report_file_writer.dart';
+import 'package:expense_app/features/reports/domain/monthly_report_data.dart';
 import 'package:expense_app/features/reports/domain/report_export_format.dart';
 import 'package:expense_app/features/reports/domain/report_export_request.dart';
 import 'package:expense_app/features/transactions/domain/transaction_model.dart';
@@ -50,18 +53,45 @@ class FakeReportFileWriter implements ReportFileWriter {
   }
 }
 
+abstract class _FakePdfExporterBase {
+  Future<List<int>> generate(MonthlyReportData data);
+}
+
+/// A controlled PDF exporter that returns configurable bytes for testing.
+class FakePdfMonthlyReportExporter
+    implements _FakePdfExporterBase, MonthlyPdfExporter {
+  FakePdfMonthlyReportExporter({required this.bytes, this.shouldThrow = false});
+
+  final List<int> bytes;
+  final bool shouldThrow;
+
+  @override
+  Future<List<int>> generate(MonthlyReportData data) async {
+    if (shouldThrow) {
+      throw Exception('Simulated PDF generation failure');
+    }
+    return bytes;
+  }
+}
+
 void main() {
   group('LocalReportExportService', () {
     late FakeReportFileWriter fakeWriter;
+    late FakePdfMonthlyReportExporter fakePdfExporter;
     late LocalReportExportService service;
 
     setUp(() {
       fakeWriter = FakeReportFileWriter(
-        ReportFileWriteResult.saved('/documents/report.csv'),
+        const ReportFileWriteResult.saved('/documents/report.csv'),
+      );
+      fakePdfExporter = FakePdfMonthlyReportExporter(
+        bytes: [0x25, 0x50, 0x44, 0x46], // %PDF fake header
       );
       service = LocalReportExportService(
         csvExporter: const CsvTransactionExporter(),
         fileWriter: fakeWriter,
+        monthlyReportDataBuilder: const MonthlyReportDataBuilder(),
+        pdfExporter: fakePdfExporter,
       );
     });
 
@@ -219,22 +249,164 @@ void main() {
       expect(result.message, contains('chưa hỗ trợ'));
     });
 
+    // PDF export tests
+
+    test('exportMonthlyPdf saved: writer called with .pdf filename', () async {
+      fakeWriter.result = const ReportFileWriteResult.saved(
+        '/documents/report.pdf',
+      );
+      final request = ReportExportRequest(
+        transactions: [],
+        selectedMonth: DateTime(2026, 5),
+        generatedAt: DateTime(2026, 5, 4, 22, 10),
+      );
+
+      await service.exportMonthlyPdf(request);
+
+      expect(fakeWriter.lastFileName, 'expense_monthly_report_2026_05.pdf');
+      expect(fakeWriter.lastBytes, isNotNull);
+    });
+
+    test('exportMonthlyPdf saved: filePath is populated', () async {
+      fakeWriter.result = const ReportFileWriteResult.saved(
+        '/documents/report.pdf',
+      );
+      final request = ReportExportRequest(
+        transactions: [],
+        selectedMonth: DateTime(2026, 5),
+        generatedAt: DateTime(2026, 5, 4, 22, 10),
+      );
+
+      final result = await service.exportMonthlyPdf(request);
+
+      expect(result.filePath, isNotNull);
+      expect(result.format, ReportExportFormat.pdf);
+    });
+
+    test('exportMonthlyPdf saved: success message', () async {
+      fakeWriter.result = const ReportFileWriteResult.saved(
+        '/documents/report.pdf',
+      );
+      final request = ReportExportRequest(
+        transactions: [],
+        selectedMonth: DateTime(2026, 5),
+        generatedAt: DateTime(2026, 5, 4, 22, 10),
+      );
+
+      final result = await service.exportMonthlyPdf(request);
+
+      expect(result.message, contains('Đã xuất PDF'));
+      expect(result.message, contains('expense_monthly_report_2026_05.pdf'));
+    });
+
+    test('exportMonthlyPdf cancelled: filePath is null', () async {
+      fakeWriter.result = const ReportFileWriteResult.cancelled();
+      final request = ReportExportRequest(
+        transactions: [],
+        selectedMonth: DateTime(2026, 5),
+        generatedAt: DateTime(2026, 5, 4, 22, 10),
+      );
+
+      final result = await service.exportMonthlyPdf(request);
+
+      expect(result.filePath, isNull);
+    });
+
+    test('exportMonthlyPdf cancelled: cancel message', () async {
+      fakeWriter.result = const ReportFileWriteResult.cancelled();
+      final request = ReportExportRequest(
+        transactions: [],
+        selectedMonth: DateTime(2026, 5),
+        generatedAt: DateTime(2026, 5, 4, 22, 10),
+      );
+
+      final result = await service.exportMonthlyPdf(request);
+
+      expect(result.message, contains('Đã hủy xuất PDF.'));
+    });
+
+    test('exportMonthlyPdf unsupported: filePath is null', () async {
+      fakeWriter.result = const ReportFileWriteResult.unsupported();
+      final request = ReportExportRequest(
+        transactions: [],
+        selectedMonth: DateTime(2026, 5),
+        generatedAt: DateTime(2026, 5, 4, 22, 10),
+      );
+
+      final result = await service.exportMonthlyPdf(request);
+
+      expect(result.filePath, isNull);
+    });
+
+    test('exportMonthlyPdf unsupported: unsupported message', () async {
+      fakeWriter.result = const ReportFileWriteResult.unsupported();
+      final request = ReportExportRequest(
+        transactions: [],
+        selectedMonth: DateTime(2026, 5),
+        generatedAt: DateTime(2026, 5, 4, 22, 10),
+      );
+
+      final result = await service.exportMonthlyPdf(request);
+
+      expect(result.message, contains('chưa hỗ trợ'));
+    });
+
     test(
-      'exportMonthlyPdf returns pending message and does not throw',
+      'exportMonthlyPdf PDF generation failure: returns error message',
       () async {
+        fakePdfExporter = FakePdfMonthlyReportExporter(
+          bytes: [],
+          shouldThrow: true,
+        );
+        service = LocalReportExportService(
+          csvExporter: const CsvTransactionExporter(),
+          fileWriter: fakeWriter,
+          monthlyReportDataBuilder: const MonthlyReportDataBuilder(),
+          pdfExporter: fakePdfExporter,
+        );
         final request = ReportExportRequest(
           transactions: [],
           selectedMonth: DateTime(2026, 5),
-          generatedAt: DateTime(2026, 5, 4),
+          generatedAt: DateTime(2026, 5, 4, 22, 10),
         );
 
         final result = await service.exportMonthlyPdf(request);
 
         expect(result.format, ReportExportFormat.pdf);
-        expect(result.message, contains('9C'));
+        expect(result.message, contains('Không thể tạo PDF'));
         expect(result.filePath, isNull);
       },
     );
+
+    test('exportMonthlyPdf uses selectedMonth for filtering', () async {
+      fakeWriter.result = const ReportFileWriteResult.saved(
+        '/documents/report.pdf',
+      );
+      final request = ReportExportRequest(
+        transactions: [
+          _tx(
+            id: 'jan',
+            type: TransactionType.expense,
+            amount: 10000,
+            category: 'Food',
+            date: DateTime(2026, 1, 15),
+          ),
+          _tx(
+            id: 'may',
+            type: TransactionType.expense,
+            amount: 20000,
+            category: 'Transport',
+            date: DateTime(2026, 5, 10),
+          ),
+        ],
+        selectedMonth: DateTime(2026, 5),
+        generatedAt: DateTime(2026, 5, 4, 22, 10),
+      );
+
+      final result = await service.exportMonthlyPdf(request);
+
+      expect(result.format, ReportExportFormat.pdf);
+    });
 
     test('CSV export preserves existing behavior', () async {
       final request = ReportExportRequest(

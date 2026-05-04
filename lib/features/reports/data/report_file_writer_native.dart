@@ -19,16 +19,7 @@ class NativeReportFileWriter implements ReportFileWriter {
     required String fileName,
     required List<int> bytes,
   }) async {
-    final location = await getSaveLocation(
-      suggestedName: fileName,
-      acceptedTypeGroups: const [
-        XTypeGroup(
-          label: 'CSV files',
-          extensions: ['csv'],
-          mimeTypes: ['text/csv'],
-        ),
-      ],
-    );
+    final location = await getSaveLocation(suggestedName: fileName);
 
     if (location == null) {
       return const ReportFileWriteResult.cancelled();
