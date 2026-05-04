@@ -644,7 +644,9 @@
 - [x] `flutter analyze` — PASS (no issues)
 - [x] `flutter test` — PASS (115 tests: csv exporter + file namer + service + write result + filter/controller/widget)
 - [x] `flutter run -d chrome --web-run-headless --no-resident` — PASS (web fallback safe)
-- [ ] `flutter run -d windows` manual CSV Save As smoke — NOT RUN (Cursor environment)
+- [x] `flutter build windows --release` — PASS (release exe built successfully)
+- [x] Windows release exe launched and exited cleanly (manual smoke)
+- [x] `flutter run -d windows` debug build — BLOCKED (Windows Defender file lock on LNK1168; use `--release` for native CSV smoke)
 
 **Next step:**
 - Phase 9C — PDF Export Implementation.
