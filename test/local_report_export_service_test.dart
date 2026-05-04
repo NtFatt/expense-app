@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:expense_app/features/reports/data/csv_transaction_exporter.dart';
 import 'package:expense_app/features/reports/data/local_report_export_service.dart';
+import 'package:expense_app/features/reports/data/report_file_write_result.dart';
 import 'package:expense_app/features/reports/data/report_file_writer.dart';
 import 'package:expense_app/features/reports/domain/report_export_format.dart';
 import 'package:expense_app/features/reports/domain/report_export_request.dart';
@@ -31,34 +32,21 @@ TransactionModel _tx({
   );
 }
 
-/// Fake file writer for testing — stores last write call and returns a fake path.
-class FakeReportFileWriter {
-  String? lastFileName;
+class FakeReportFileWriter implements ReportFileWriter {
+  FakeReportFileWriter(this.result);
+
+  ReportFileWriteResult result;
   List<int>? lastBytes;
+  String? lastFileName;
 
-  String? writeResult;
-
-  Future<String?> writeBytes({
+  @override
+  Future<ReportFileWriteResult> writeBytes({
     required String fileName,
     required List<int> bytes,
   }) async {
     lastFileName = fileName;
     lastBytes = bytes;
-    return writeResult;
-  }
-}
-
-class _FakeReportFileWriterAdapter implements ReportFileWriter {
-  _FakeReportFileWriterAdapter(this._fake);
-
-  final FakeReportFileWriter _fake;
-
-  @override
-  Future<String?> writeBytes({
-    required String fileName,
-    required List<int> bytes,
-  }) {
-    return _fake.writeBytes(fileName: fileName, bytes: bytes);
+    return result;
   }
 }
 
@@ -68,28 +56,28 @@ void main() {
     late LocalReportExportService service;
 
     setUp(() {
-      fakeWriter = FakeReportFileWriter();
+      fakeWriter = FakeReportFileWriter(
+        ReportFileWriteResult.saved('/documents/report.csv'),
+      );
       service = LocalReportExportService(
         csvExporter: const CsvTransactionExporter(),
-        fileWriter: _FakeReportFileWriterAdapter(fakeWriter),
+        fileWriter: fakeWriter,
       );
     });
 
-    test('exportTransactionsCsv calls writer with expected filename', () async {
+    test('saved result: writer is called with correct filename', () async {
       final request = ReportExportRequest(
         transactions: [],
         selectedMonth: DateTime(2026, 5),
         generatedAt: DateTime(2026, 5, 4, 22, 10),
       );
-      fakeWriter.writeResult =
-          '/fake/path/expense_transactions_20260504_2210.csv';
 
       await service.exportTransactionsCsv(request);
 
       expect(fakeWriter.lastFileName, 'expense_transactions_20260504_2210.csv');
     });
 
-    test('exportTransactionsCsv passes UTF-8 encoded bytes', () async {
+    test('saved result: CSV bytes contain UTF-8 BOM and header', () async {
       final request = ReportExportRequest(
         transactions: [
           _tx(
@@ -104,8 +92,6 @@ void main() {
         selectedMonth: DateTime(2026, 1),
         generatedAt: DateTime(2026, 5, 4, 22, 10),
       );
-      fakeWriter.writeResult =
-          '/fake/path/expense_transactions_20260504_2210.csv';
 
       await service.exportTransactionsCsv(request);
 
@@ -115,21 +101,50 @@ void main() {
       expect(csv, contains('35000'));
     });
 
-    test('exportTransactionsCsv result contains format csv', () async {
-      fakeWriter.writeResult = '/fake/path/test.csv';
+    test('saved result: filePath is populated', () async {
       final request = ReportExportRequest(
         transactions: [],
         selectedMonth: DateTime(2026, 5),
-        generatedAt: DateTime(2026, 5, 4),
+        generatedAt: DateTime(2026, 5, 4, 22, 10),
       );
 
       final result = await service.exportTransactionsCsv(request);
 
+      expect(result.filePath, isNotNull);
       expect(result.format, ReportExportFormat.csv);
     });
 
-    test('exportTransactionsCsv result contains filename', () async {
-      fakeWriter.writeResult = '/fake/path/test.csv';
+    test('saved result: message contains filename', () async {
+      final request = ReportExportRequest(
+        transactions: [],
+        selectedMonth: DateTime(2026, 5),
+        generatedAt: DateTime(2026, 5, 4, 22, 10),
+      );
+
+      final result = await service.exportTransactionsCsv(request);
+
+      expect(result.message, contains('Đã xuất CSV'));
+      expect(
+        result.message,
+        contains('expense_transactions_20260504_2210.csv'),
+      );
+    });
+
+    test('cancelled result: writer is called', () async {
+      fakeWriter.result = const ReportFileWriteResult.cancelled();
+      final request = ReportExportRequest(
+        transactions: [],
+        selectedMonth: DateTime(2026, 5),
+        generatedAt: DateTime(2026, 5, 4),
+      );
+
+      await service.exportTransactionsCsv(request);
+
+      expect(fakeWriter.lastFileName, isNotNull);
+    });
+
+    test('cancelled result: filePath is null', () async {
+      fakeWriter.result = const ReportFileWriteResult.cancelled();
       final request = ReportExportRequest(
         transactions: [],
         selectedMonth: DateTime(2026, 5),
@@ -138,43 +153,71 @@ void main() {
 
       final result = await service.exportTransactionsCsv(request);
 
-      expect(result.fileName, 'expense_transactions_20260504_0000.csv');
+      expect(result.filePath, isNull);
     });
 
-    test(
-      'exportTransactionsCsv result contains filePath when writer succeeds',
-      () async {
-        fakeWriter.writeResult =
-            '/documents/expense_transactions_20260504_2210.csv';
-        final request = ReportExportRequest(
-          transactions: [],
-          selectedMonth: DateTime(2026, 5),
-          generatedAt: DateTime(2026, 5, 4, 22, 10),
-        );
+    test('cancelled result: message indicates cancellation', () async {
+      fakeWriter.result = const ReportFileWriteResult.cancelled();
+      final request = ReportExportRequest(
+        transactions: [],
+        selectedMonth: DateTime(2026, 5),
+        generatedAt: DateTime(2026, 5, 4),
+      );
 
-        final result = await service.exportTransactionsCsv(request);
+      final result = await service.exportTransactionsCsv(request);
 
-        expect(result.filePath, isNotNull);
-        expect(result.message, contains('Đã xuất CSV'));
-      },
-    );
+      expect(result.message, contains('Đã hủy xuất CSV.'));
+    });
 
-    test(
-      'exportTransactionsCsv result contains message when writer returns null (web)',
-      () async {
-        fakeWriter.writeResult = null;
-        final request = ReportExportRequest(
-          transactions: [],
-          selectedMonth: DateTime(2026, 5),
-          generatedAt: DateTime(2026, 5, 4),
-        );
+    test('cancelled result: does not throw', () async {
+      fakeWriter.result = const ReportFileWriteResult.cancelled();
+      final request = ReportExportRequest(
+        transactions: [],
+        selectedMonth: DateTime(2026, 5),
+        generatedAt: DateTime(2026, 5, 4),
+      );
 
-        final result = await service.exportTransactionsCsv(request);
+      expect(() => service.exportTransactionsCsv(request), returnsNormally);
+    });
 
-        expect(result.filePath, isNull);
-        expect(result.message, contains('chưa hỗ trợ'));
-      },
-    );
+    test('unsupported result: writer is called', () async {
+      fakeWriter.result = const ReportFileWriteResult.unsupported();
+      final request = ReportExportRequest(
+        transactions: [],
+        selectedMonth: DateTime(2026, 5),
+        generatedAt: DateTime(2026, 5, 4),
+      );
+
+      await service.exportTransactionsCsv(request);
+
+      expect(fakeWriter.lastFileName, isNotNull);
+    });
+
+    test('unsupported result: filePath is null', () async {
+      fakeWriter.result = const ReportFileWriteResult.unsupported();
+      final request = ReportExportRequest(
+        transactions: [],
+        selectedMonth: DateTime(2026, 5),
+        generatedAt: DateTime(2026, 5, 4),
+      );
+
+      final result = await service.exportTransactionsCsv(request);
+
+      expect(result.filePath, isNull);
+    });
+
+    test('unsupported result: message indicates unsupported', () async {
+      fakeWriter.result = const ReportFileWriteResult.unsupported();
+      final request = ReportExportRequest(
+        transactions: [],
+        selectedMonth: DateTime(2026, 5),
+        generatedAt: DateTime(2026, 5, 4),
+      );
+
+      final result = await service.exportTransactionsCsv(request);
+
+      expect(result.message, contains('chưa hỗ trợ'));
+    });
 
     test(
       'exportMonthlyPdf returns pending message and does not throw',
@@ -192,5 +235,28 @@ void main() {
         expect(result.filePath, isNull);
       },
     );
+
+    test('CSV export preserves existing behavior', () async {
+      final request = ReportExportRequest(
+        transactions: [
+          _tx(
+            id: 'b',
+            type: TransactionType.income,
+            amount: 100000,
+            category: 'Lương',
+            note: 'Tháng 1',
+            date: DateTime(2026, 1, 5),
+          ),
+        ],
+        selectedMonth: DateTime(2026, 1),
+        generatedAt: DateTime(2026, 1, 10, 9, 0),
+      );
+
+      final result = await service.exportTransactionsCsv(request);
+
+      expect(result.format, ReportExportFormat.csv);
+      expect(result.fileName, 'expense_transactions_20260110_0900.csv');
+      expect(result.filePath, '/documents/report.csv');
+    });
   });
 }

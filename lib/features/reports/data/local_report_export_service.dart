@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:expense_app/features/reports/data/csv_transaction_exporter.dart';
 import 'package:expense_app/features/reports/data/report_file_namer.dart';
+import 'package:expense_app/features/reports/data/report_file_write_result.dart';
 import 'package:expense_app/features/reports/data/report_file_writer.dart';
 import 'package:expense_app/features/reports/domain/report_export_format.dart';
 import 'package:expense_app/features/reports/domain/report_export_request.dart';
@@ -11,9 +12,9 @@ import 'report_export_service.dart';
 
 /// Concrete implementation of [ReportExportService] for native platforms.
 ///
-/// The CSV leg is fully implemented. The PDF leg returns a pending message
-/// (deferred to Phase 9C). This class lives in the [data] layer and has
-/// no `BuildContext` or Flutter UI dependencies.
+/// The CSV leg opens a Save As dialog so the user picks the destination. The
+/// PDF leg returns a pending message (deferred to Phase 9C). This class lives
+/// in the [data] layer and has no `BuildContext` or Flutter UI dependencies.
 class LocalReportExportService implements ReportExportService {
   const LocalReportExportService({
     required CsvTransactionExporter csvExporter,
@@ -33,19 +34,34 @@ class LocalReportExportService implements ReportExportService {
     );
     final String csv = _csvExporter.generate(request.transactions);
     final List<int> bytes = utf8.encode(csv);
-    final String? filePath = await _fileWriter.writeBytes(
+    final writeResult = await _fileWriter.writeBytes(
       fileName: fileName,
       bytes: bytes,
     );
 
-    return ReportExportResult(
-      format: ReportExportFormat.csv,
-      fileName: fileName,
-      filePath: filePath,
-      message: filePath != null
-          ? 'Đã xuất CSV: $fileName'
-          : 'Đã tạo CSV nhưng lưu file chưa hỗ trợ trên nền tảng này.',
-    );
+    switch (writeResult.status) {
+      case ReportFileWriteStatus.saved:
+        return ReportExportResult(
+          format: ReportExportFormat.csv,
+          fileName: fileName,
+          filePath: writeResult.filePath,
+          message: 'Đã xuất CSV: $fileName',
+        );
+      case ReportFileWriteStatus.cancelled:
+        return ReportExportResult(
+          format: ReportExportFormat.csv,
+          fileName: fileName,
+          filePath: null,
+          message: 'Đã hủy xuất CSV.',
+        );
+      case ReportFileWriteStatus.unsupported:
+        return ReportExportResult(
+          format: ReportExportFormat.csv,
+          fileName: fileName,
+          filePath: null,
+          message: 'Xuất CSV chưa hỗ trợ lưu file trên nền tảng này.',
+        );
+    }
   }
 
   @override
