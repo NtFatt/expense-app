@@ -9,7 +9,7 @@
 - Current default repository: Platform-aware (`InMemoryTransactionRepository` on web, `DriftTransactionRepository` on native)
 - Persistence status: Drift scaffolded and verified on Windows (Phase 8C); native uses Drift as active repository; web uses InMemory fallback via conditional imports
 - Current validation status: `flutter analyze` PASS, `flutter test` PASS (115 tests), `flutter run -d chrome` PASS
-- Last updated: `2026-05-04` (Phase 9B CSV Save As dialog: 115 tests pass · `file_selector` added · Phase 9C/9D NOT STARTED)
+- Last updated: `2026-05-05` (Phase 9B CSV Save As dialog: 115 tests pass · `file_selector` added · Phase 9C/9D NOT STARTED)
 
 ## 1. Status Legend
 
@@ -831,6 +831,8 @@
 | **2026-05-04** | **`flutter analyze`** | **PASS** | **Phase 9B CSV Save As dialog fix: 0 issues (`file_selector` added, `ReportFileWriteResult` introduced)** |
 | **2026-05-04** | **`flutter test`** | **PASS** | **Phase 9B: 115 tests pass (6 new write result + 6 updated service tests)** |
 | **2026-05-04** | **`flutter run -d chrome --web-run-headless --no-resident`** | **PASS** | **Phase 9B: web fallback safe — stub returns `unsupported`** |
+| **2026-05-05** | **`flutter analyze`** | **PASS** | **Current state re-validation: no issues found** |
+| **2026-05-05** | **`flutter test`** | **PASS** | **Current state re-validation: 115 tests pass (no regressions)** |
 
 ## 5. Current Risks / Technical Notes
 
@@ -855,6 +857,5 @@
 
 ### Last Commits
 
-- `[pending]` — Phase 9B: implement CSV export (ready to commit)
-- `7c327d2` — `docs(persistence): complete phase 8 hardening and documentation` — 2026-05-03 (Phase 8D)
-- `72a8d4d` — `docs(persistence): mark phase 8c native qa complete` — 2026-05-03 (Phase 8C)
+- `7d9c7c0` — `docs(progress): record Phase 9B windows release smoke and debug blocker` — 2026-05-04
+- `68781fc` — `fix(reports): prompt for CSV export destination via Save As dialog` — 2026-05-04 (Phase 9B Save As fix)
