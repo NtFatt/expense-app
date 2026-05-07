@@ -1,3 +1,5 @@
+import 'package:expense_app/core/localization/app_string_key.dart';
+import 'package:expense_app/core/localization/app_strings_context.dart';
 import 'package:expense_app/core/utils/currency_formatter.dart';
 import 'package:expense_app/features/transactions/domain/transaction_model.dart';
 import 'package:flutter/material.dart';
@@ -23,25 +25,33 @@ class FilteredTransactionsSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Tóm tắt nhanh',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+          Text(
+            context.strings.t(AppStringKey.quickSummary),
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Theo dõi số lượng giao dịch và tác động tới số dư hiện tại.',
-            style: TextStyle(color: Color(0xFF64748B), height: 1.4),
+          Text(
+            context.strings.t(AppStringKey.quickSummarySubtitle),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+              height: 1.4,
+            ),
           ),
           const SizedBox(height: 16),
           GridView.count(
@@ -53,25 +63,25 @@ class FilteredTransactionsSummary extends StatelessWidget {
             childAspectRatio: 1.3,
             children: [
               _SummaryCell(
-                title: 'Tổng số giao dịch',
+                title: context.strings.t(AppStringKey.totalTransactions),
                 value: transactions.length.toString(),
                 icon: Icons.receipt_long_rounded,
                 accentColor: const Color(0xFF2563EB),
               ),
               _SummaryCell(
-                title: 'Số dư',
+                title: context.strings.t(AppStringKey.balance),
                 value: formatCurrency(_balance, withSign: false),
                 icon: Icons.account_balance_wallet_rounded,
                 accentColor: const Color(0xFF7C3AED),
               ),
               _SummaryCell(
-                title: 'Tổng thu',
+                title: context.strings.t(AppStringKey.totalIncome),
                 value: formatCurrency(_totalIncome, withSign: false),
                 icon: Icons.south_west_rounded,
                 accentColor: const Color(0xFF16A34A),
               ),
               _SummaryCell(
-                title: 'Tổng chi',
+                title: context.strings.t(AppStringKey.totalExpense),
                 value: formatCurrency(_totalExpense, withSign: false),
                 icon: Icons.north_east_rounded,
                 accentColor: const Color(0xFFEA580C),
@@ -99,12 +109,15 @@ class _SummaryCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -120,8 +133,8 @@ class _SummaryCell extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             title,
-            style: const TextStyle(
-              color: Color(0xFF64748B),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
               fontSize: 12,
             ),
@@ -129,7 +142,10 @@ class _SummaryCell extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             value,
-            style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w900,
+              fontSize: 17,
+            ),
           ),
         ],
       ),

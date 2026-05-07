@@ -1,3 +1,5 @@
+import 'package:expense_app/core/localization/app_string_key.dart';
+import 'package:expense_app/core/localization/app_strings_context.dart';
 import 'package:expense_app/core/utils/currency_formatter.dart';
 import 'package:expense_app/features/transactions/presentation/controllers/transaction_controller.dart';
 import 'package:flutter/material.dart';
@@ -15,14 +17,16 @@ class TopCategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double percent = summary.percentageOf(totalExpense) * 100;
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Row(
         children: [
@@ -42,25 +46,30 @@ class TopCategoryCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Chi nhiều nhất',
-                  style: TextStyle(
-                    color: Color(0xFF64748B),
+                Text(
+                  context.strings.t(AppStringKey.topCategory),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   summary.category,
-                  style: const TextStyle(
-                    fontSize: 18,
+                  style: theme.textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.w900,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '${formatCurrency(summary.amount, withSign: false)} • ${percent.toStringAsFixed(0)}% tổng chi',
-                  style: const TextStyle(color: Color(0xFF64748B), height: 1.4),
+                  context.strings.topCategorySummary(
+                    amount: formatCurrency(summary.amount, withSign: false),
+                    percent: percent.round(),
+                  ),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.4,
+                  ),
                 ),
               ],
             ),

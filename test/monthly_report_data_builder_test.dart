@@ -35,12 +35,27 @@ void main() {
 
     test('filters transactions by selected month', () {
       final transactions = [
-        _tx(id: '1', type: TransactionType.expense, amount: 10000,
-            category: 'Food', date: DateTime(2026, 5, 5)),
-        _tx(id: '2', type: TransactionType.expense, amount: 20000,
-            category: 'Transport', date: DateTime(2026, 5, 10)),
-        _tx(id: '3', type: TransactionType.income, amount: 50000,
-            category: 'Salary', date: DateTime(2026, 6, 1)),
+        _tx(
+          id: '1',
+          type: TransactionType.expense,
+          amount: 10000,
+          category: 'Food',
+          date: DateTime(2026, 5, 5),
+        ),
+        _tx(
+          id: '2',
+          type: TransactionType.expense,
+          amount: 20000,
+          category: 'Transport',
+          date: DateTime(2026, 5, 10),
+        ),
+        _tx(
+          id: '3',
+          type: TransactionType.income,
+          amount: 50000,
+          category: 'Salary',
+          date: DateTime(2026, 6, 1),
+        ),
       ];
 
       final report = builder.build(
@@ -55,12 +70,27 @@ void main() {
 
     test('does not include transactions from other months', () {
       final transactions = [
-        _tx(id: '1', type: TransactionType.expense, amount: 10000,
-            category: 'Food', date: DateTime(2026, 3, 15)),
-        _tx(id: '2', type: TransactionType.expense, amount: 20000,
-            category: 'Food', date: DateTime(2026, 5, 15)),
-        _tx(id: '3', type: TransactionType.expense, amount: 30000,
-            category: 'Food', date: DateTime(2026, 7, 15)),
+        _tx(
+          id: '1',
+          type: TransactionType.expense,
+          amount: 10000,
+          category: 'Food',
+          date: DateTime(2026, 3, 15),
+        ),
+        _tx(
+          id: '2',
+          type: TransactionType.expense,
+          amount: 20000,
+          category: 'Food',
+          date: DateTime(2026, 5, 15),
+        ),
+        _tx(
+          id: '3',
+          type: TransactionType.expense,
+          amount: 30000,
+          category: 'Food',
+          date: DateTime(2026, 7, 15),
+        ),
       ];
 
       final report = builder.build(
@@ -75,12 +105,27 @@ void main() {
 
     test('builds correct totalIncome and totalExpense', () {
       final transactions = [
-        _tx(id: '1', type: TransactionType.expense, amount: 30000,
-            category: 'Food', date: DateTime(2026, 5, 5)),
-        _tx(id: '2', type: TransactionType.income, amount: 100000,
-            category: 'Salary', date: DateTime(2026, 5, 1)),
-        _tx(id: '3', type: TransactionType.expense, amount: 20000,
-            category: 'Transport', date: DateTime(2026, 5, 10)),
+        _tx(
+          id: '1',
+          type: TransactionType.expense,
+          amount: 30000,
+          category: 'Food',
+          date: DateTime(2026, 5, 5),
+        ),
+        _tx(
+          id: '2',
+          type: TransactionType.income,
+          amount: 100000,
+          category: 'Salary',
+          date: DateTime(2026, 5, 1),
+        ),
+        _tx(
+          id: '3',
+          type: TransactionType.expense,
+          amount: 20000,
+          category: 'Transport',
+          date: DateTime(2026, 5, 10),
+        ),
       ];
 
       final report = builder.build(
@@ -96,8 +141,13 @@ void main() {
 
     test('empty month returns empty transactions and zero summary', () {
       final transactions = [
-        _tx(id: '1', type: TransactionType.expense, amount: 10000,
-            category: 'Food', date: DateTime(2026, 3, 5)),
+        _tx(
+          id: '1',
+          type: TransactionType.expense,
+          amount: 10000,
+          category: 'Food',
+          date: DateTime(2026, 3, 5),
+        ),
       ];
 
       final report = builder.build(
@@ -115,10 +165,20 @@ void main() {
 
     test('does not mutate original list', () {
       final transactions = [
-        _tx(id: '1', type: TransactionType.expense, amount: 10000,
-            category: 'Food', date: DateTime(2026, 5, 5)),
-        _tx(id: '2', type: TransactionType.expense, amount: 20000,
-            category: 'Transport', date: DateTime(2026, 5, 10)),
+        _tx(
+          id: '1',
+          type: TransactionType.expense,
+          amount: 10000,
+          category: 'Food',
+          date: DateTime(2026, 5, 5),
+        ),
+        _tx(
+          id: '2',
+          type: TransactionType.expense,
+          amount: 20000,
+          category: 'Transport',
+          date: DateTime(2026, 5, 10),
+        ),
       ];
       final originalLength = transactions.length;
 
@@ -133,8 +193,13 @@ void main() {
 
     test('hasTransactions is true when transactions exist', () {
       final transactions = [
-        _tx(id: '1', type: TransactionType.expense, amount: 10000,
-            category: 'Food', date: DateTime(2026, 5, 5)),
+        _tx(
+          id: '1',
+          type: TransactionType.expense,
+          amount: 10000,
+          category: 'Food',
+          date: DateTime(2026, 5, 5),
+        ),
       ];
 
       final report = builder.build(
@@ -158,8 +223,13 @@ void main() {
 
     test('hasExpenses is true when expenses exist', () {
       final transactions = [
-        _tx(id: '1', type: TransactionType.expense, amount: 10000,
-            category: 'Food', date: DateTime(2026, 5, 5)),
+        _tx(
+          id: '1',
+          type: TransactionType.expense,
+          amount: 10000,
+          category: 'Food',
+          date: DateTime(2026, 5, 5),
+        ),
       ];
 
       final report = builder.build(
@@ -173,8 +243,13 @@ void main() {
 
     test('hasExpenses is false when only income', () {
       final transactions = [
-        _tx(id: '1', type: TransactionType.income, amount: 50000,
-            category: 'Salary', date: DateTime(2026, 5, 1)),
+        _tx(
+          id: '1',
+          type: TransactionType.income,
+          amount: 50000,
+          category: 'Salary',
+          date: DateTime(2026, 5, 1),
+        ),
       ];
 
       final report = builder.build(

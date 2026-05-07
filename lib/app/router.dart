@@ -1,4 +1,6 @@
 import 'package:expense_app/features/reports/presentation/pages/reports_page.dart';
+import 'package:expense_app/features/pay_later/presentation/pages/pay_later_page.dart';
+import 'package:expense_app/features/settings/presentation/pages/settings_page.dart';
 import 'package:expense_app/features/statistics/presentation/pages/statistics_page.dart';
 import 'package:expense_app/features/transactions/presentation/pages/add_transaction_page.dart';
 import 'package:expense_app/features/transactions/presentation/pages/dashboard_page.dart';
@@ -26,6 +28,14 @@ final GoRouter appRouter = GoRouter(
       path: '/statistics',
       builder: (context, state) => const StatisticsPage(),
     ),
+    GoRoute(
+      path: '/pay-later',
+      builder: (context, state) => const PayLaterPage(),
+    ),
     GoRoute(path: '/reports', builder: (context, state) => const ReportsPage()),
+    GoRoute(
+      path: '/settings',
+      builder: (context, state) => const SettingsPage(),
+    ),
   ],
 );

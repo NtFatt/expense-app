@@ -32,6 +32,11 @@ migrate_working_dir/
 .pub/
 /build/
 /coverage/
+/tmp/
+
+# Local QA artifacts and downloaded font archives
+/assets/fonts/NotoSans/
+/assets/fonts/*.zip
 
 # Symbolication related
 app.*.symbols

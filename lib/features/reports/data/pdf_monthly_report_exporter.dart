@@ -94,7 +94,7 @@ class PdfMonthlyReportExporter implements MonthlyPdfExporter {
       children: [
         _sectionTitle('1. Tổng quan', fonts),
         pw.SizedBox(height: 8),
-        pw.Table.fromTextArray(
+        pw.TableHelper.fromTextArray(
           headerStyle: pw.TextStyle(font: fonts.bold, fontSize: 10),
           cellStyle: pw.TextStyle(font: fonts.regular, fontSize: 10),
           cellAlignments: const {
@@ -133,7 +133,7 @@ class PdfMonthlyReportExporter implements MonthlyPdfExporter {
             ),
           )
         else
-          pw.Table.fromTextArray(
+          pw.TableHelper.fromTextArray(
             headerStyle: pw.TextStyle(font: fonts.bold, fontSize: 10),
             cellStyle: pw.TextStyle(font: fonts.regular, fontSize: 10),
             headerAlignments: const {
@@ -170,7 +170,7 @@ class PdfMonthlyReportExporter implements MonthlyPdfExporter {
       children: [
         _sectionTitle('3. Danh sách giao dịch', fonts),
         pw.SizedBox(height: 8),
-        pw.Table.fromTextArray(
+        pw.TableHelper.fromTextArray(
           headerStyle: pw.TextStyle(font: fonts.bold, fontSize: 10),
           cellStyle: pw.TextStyle(font: fonts.regular, fontSize: 10),
           headerAlignments: const {

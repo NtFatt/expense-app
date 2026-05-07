@@ -1,3 +1,5 @@
+import 'package:expense_app/core/localization/app_string_key.dart';
+import 'package:expense_app/core/localization/app_strings_context.dart';
 import 'package:expense_app/core/utils/currency_formatter.dart';
 import 'package:expense_app/features/statistics/presentation/widgets/spending_by_category_chart.dart';
 import 'package:expense_app/features/statistics/presentation/widgets/statistics_summary_card.dart';
@@ -19,24 +21,6 @@ import 'package:go_router/go_router.dart';
 class StatisticsPage extends ConsumerWidget {
   const StatisticsPage({super.key});
 
-  static const List<String> _months = [
-    'Tháng 1',
-    'Tháng 2',
-    'Tháng 3',
-    'Tháng 4',
-    'Tháng 5',
-    'Tháng 6',
-    'Tháng 7',
-    'Tháng 8',
-    'Tháng 9',
-    'Tháng 10',
-    'Tháng 11',
-    'Tháng 12',
-  ];
-
-  String _monthLabel(DateTime month) =>
-      '${_months[month.month - 1]} ${month.year}';
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<TransactionState> transactionState = ref.watch(
@@ -48,9 +32,11 @@ class StatisticsPage extends ConsumerWidget {
     final TransactionFilterController filterCtrl = ref.read(
       transactionFilterControllerProvider.notifier,
     );
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
 
     return AppScaffold(
-      title: 'Thống kê',
+      title: context.strings.t(AppStringKey.statisticsTitle),
       bottomNavigationBar: const AppBottomNavigation(),
       child: transactionState.when(
         loading: () => const SizedBox(
@@ -62,7 +48,7 @@ class StatisticsPage extends ConsumerWidget {
             height: 320,
             child: Center(
               child: Text(
-                'Không thể tải thống kê.\n$error',
+                '${context.strings.t(AppStringKey.couldNotLoadStatistics)}\n$error',
                 textAlign: TextAlign.center,
                 style: const TextStyle(height: 1.5),
               ),
@@ -82,9 +68,12 @@ class StatisticsPage extends ConsumerWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Bức tranh tài chính hiện tại từ các giao dịch bạn đã nhập.',
-                style: TextStyle(color: Color(0xFF64748B), height: 1.45),
+              Text(
+                context.strings.t(AppStringKey.statisticsSubtitle),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  height: 1.45,
+                ),
               ),
               const SizedBox(height: 12),
               Row(
@@ -100,12 +89,12 @@ class StatisticsPage extends ConsumerWidget {
               const SizedBox(height: 4),
               Center(
                 child: Text(
-                  _monthLabel(filter.selectedMonth),
+                  context.strings.monthYear(filter.selectedMonth),
                   key: const Key('statistics_month_label'),
-                  style: const TextStyle(
+                  style: theme.textTheme.bodySmall?.copyWith(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF64748B),
+                    color: colorScheme.onSurfaceVariant,
                   ),
                 ),
               ),
@@ -119,13 +108,13 @@ class StatisticsPage extends ConsumerWidget {
                 childAspectRatio: 1.3,
                 children: [
                   StatisticsSummaryCard(
-                    title: 'Tổng thu',
+                    title: context.strings.t(AppStringKey.totalIncome),
                     value: formatCurrency(summary.totalIncome, withSign: false),
                     icon: Icons.south_west_rounded,
                     accentColor: const Color(0xFF16A34A),
                   ),
                   StatisticsSummaryCard(
-                    title: 'Tổng chi',
+                    title: context.strings.t(AppStringKey.totalExpense),
                     value: formatCurrency(
                       summary.totalExpense,
                       withSign: false,
@@ -134,13 +123,13 @@ class StatisticsPage extends ConsumerWidget {
                     accentColor: const Color(0xFFEA580C),
                   ),
                   StatisticsSummaryCard(
-                    title: 'Số dư',
+                    title: context.strings.t(AppStringKey.balance),
                     value: formatCurrency(summary.balance, withSign: false),
                     icon: Icons.account_balance_wallet_rounded,
                     accentColor: const Color(0xFF2563EB),
                   ),
                   StatisticsSummaryCard(
-                    title: 'Số giao dịch',
+                    title: context.strings.t(AppStringKey.transactionCount),
                     value: summary.totalTransactions.toString(),
                     icon: Icons.receipt_long_rounded,
                     accentColor: const Color(0xFF7C3AED),
@@ -150,10 +139,12 @@ class StatisticsPage extends ConsumerWidget {
               const SizedBox(height: 24),
               if (summary.totalExpense == 0)
                 EmptyState(
-                  title: 'Chưa có dữ liệu chi tiêu',
-                  message: 'Tháng này chưa có khoản chi nào để thống kê.',
+                  title: context.strings.t(AppStringKey.noSpendingData),
+                  message: context.strings.t(
+                    AppStringKey.noSpendingDataMessage,
+                  ),
                   icon: Icons.pie_chart_outline_rounded,
-                  actionLabel: 'Thêm giao dịch',
+                  actionLabel: context.strings.t(AppStringKey.addTransaction),
                   onActionPressed: () => context.push('/transactions/new'),
                 )
               else ...[
@@ -169,15 +160,17 @@ class StatisticsPage extends ConsumerWidget {
                   totalExpense: summary.totalExpense,
                 ),
                 const SizedBox(height: 24),
-                const SectionHeader(title: 'Chi tiêu theo danh mục'),
+                SectionHeader(
+                  title: context.strings.t(AppStringKey.spendingByCategory),
+                ),
                 const SizedBox(height: 8),
                 Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: colorScheme.surface,
                     borderRadius: BorderRadius.circular(24),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
+                    border: Border.all(color: colorScheme.outlineVariant),
                   ),
                   child: Column(
                     children: [
@@ -192,7 +185,10 @@ class StatisticsPage extends ConsumerWidget {
                         ),
                         if (index !=
                             summary.expenseCategorySummaries.length - 1)
-                          const Divider(height: 24, color: Color(0xFFE2E8F0)),
+                          Divider(
+                            height: 24,
+                            color: colorScheme.outlineVariant,
+                          ),
                       ],
                     ],
                   ),
@@ -218,18 +214,24 @@ class _CategoryBreakdownRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double percent = summary.percentageOf(totalExpense) * 100;
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
 
     return Row(
       children: [
         Expanded(
           child: Text(
             summary.category,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+            style: theme.textTheme.bodyLarge?.copyWith(
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
         Text(
           formatCurrency(summary.amount, withSign: false),
-          style: const TextStyle(fontWeight: FontWeight.w800),
+          style: theme.textTheme.bodyLarge?.copyWith(
+            fontWeight: FontWeight.w800,
+          ),
         ),
         const SizedBox(width: 12),
         SizedBox(
@@ -237,8 +239,8 @@ class _CategoryBreakdownRow extends StatelessWidget {
           child: Text(
             '${percent.toStringAsFixed(0)}%',
             textAlign: TextAlign.right,
-            style: const TextStyle(
-              color: Color(0xFF64748B),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
             ),
           ),

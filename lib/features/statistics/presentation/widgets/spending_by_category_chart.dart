@@ -1,3 +1,5 @@
+import 'package:expense_app/core/localization/app_string_key.dart';
+import 'package:expense_app/core/localization/app_strings_context.dart';
 import 'package:expense_app/core/utils/currency_formatter.dart';
 import 'package:expense_app/features/transactions/presentation/controllers/transaction_controller.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -25,25 +27,33 @@ class SpendingByCategoryChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Chi tiêu theo danh mục',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+          Text(
+            context.strings.t(AppStringKey.spendingByCategory),
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w800,
+            ),
           ),
           const SizedBox(height: 6),
-          const Text(
-            'Tỷ trọng từng danh mục trên tổng chi hiện tại.',
-            style: TextStyle(color: Color(0xFF64748B), height: 1.4),
+          Text(
+            context.strings.t(AppStringKey.spendingByCategorySubtitle),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+              height: 1.4,
+            ),
           ),
           const SizedBox(height: 20),
           SizedBox(
@@ -76,10 +86,10 @@ class SpendingByCategoryChart extends StatelessWidget {
                 Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text(
-                      'Tổng chi',
-                      style: TextStyle(
-                        color: Color(0xFF64748B),
+                    Text(
+                      context.strings.t(AppStringKey.totalExpense),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -87,8 +97,7 @@ class SpendingByCategoryChart extends StatelessWidget {
                     Text(
                       formatCurrency(totalExpense, withSign: false),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 16,
+                      style: theme.textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.w900,
                       ),
                     ),

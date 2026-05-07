@@ -1,3 +1,5 @@
+import 'package:expense_app/core/localization/app_string_key.dart';
+import 'package:expense_app/core/localization/app_strings_context.dart';
 import 'package:expense_app/features/transactions/domain/transaction_filters.dart';
 import 'package:expense_app/features/transactions/presentation/widgets/month_selector.dart';
 import 'package:flutter/material.dart';
@@ -51,12 +53,15 @@ class _TransactionFilterBarState extends State<TransactionFilterBar> {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -90,7 +95,8 @@ class _TransactionFilterBarState extends State<TransactionFilterBar> {
       controller: _searchController,
       onChanged: widget.onSearchChanged,
       decoration: InputDecoration(
-        hintText: 'Tìm theo danh mục, ghi chú...',
+        labelText: context.strings.t(AppStringKey.searchTransactions),
+        hintText: context.strings.t(AppStringKey.searchByCategoryOrNote),
         prefixIcon: const Icon(Icons.search, size: 20),
         suffixIcon: widget.filter.hasSearch
             ? IconButton(
@@ -113,7 +119,7 @@ class _TransactionFilterBarState extends State<TransactionFilterBar> {
       children: [
         Expanded(
           child: _TypeChip(
-            label: 'Tất cả',
+            label: context.strings.t(AppStringKey.all),
             isSelected: widget.filter.typeFilter == TransactionTypeFilter.all,
             onTap: () => widget.onTypeChanged(TransactionTypeFilter.all),
           ),
@@ -121,7 +127,7 @@ class _TransactionFilterBarState extends State<TransactionFilterBar> {
         const SizedBox(width: 8),
         Expanded(
           child: _TypeChip(
-            label: 'Thu nhập',
+            label: context.strings.t(AppStringKey.income),
             isSelected:
                 widget.filter.typeFilter == TransactionTypeFilter.income,
             onTap: () => widget.onTypeChanged(TransactionTypeFilter.income),
@@ -130,7 +136,7 @@ class _TransactionFilterBarState extends State<TransactionFilterBar> {
         const SizedBox(width: 8),
         Expanded(
           child: _TypeChip(
-            label: 'Chi tiêu',
+            label: context.strings.t(AppStringKey.expense),
             isSelected:
                 widget.filter.typeFilter == TransactionTypeFilter.expense,
             onTap: () => widget.onTypeChanged(TransactionTypeFilter.expense),
@@ -146,7 +152,7 @@ class _TransactionFilterBarState extends State<TransactionFilterBar> {
         const Icon(Icons.filter_list, size: 14, color: Color(0xFF2563EB)),
         const SizedBox(width: 4),
         Text(
-          '${widget.filter.activeFilterCount} bộ lọc',
+          context.strings.activeFilterCount(widget.filter.activeFilterCount),
           style: const TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w600,
@@ -156,8 +162,8 @@ class _TransactionFilterBarState extends State<TransactionFilterBar> {
         const Spacer(),
         GestureDetector(
           onTap: widget.onClearNonMonthFilters,
-          child: const Text(
-            'Xóa lọc',
+          child: Text(
+            context.strings.t(AppStringKey.clearFilters),
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
@@ -183,13 +189,17 @@ class _TypeChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ColorScheme colorScheme = Theme.of(context).colorScheme;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF2563EB) : const Color(0xFFF1F5F9),
+          color: isSelected
+              ? colorScheme.primary
+              : colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(12),
         ),
         alignment: Alignment.center,
@@ -198,7 +208,7 @@ class _TypeChip extends StatelessWidget {
           style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w600,
-            color: isSelected ? Colors.white : const Color(0xFF64748B),
+            color: isSelected ? Colors.white : colorScheme.onSurfaceVariant,
           ),
         ),
       ),

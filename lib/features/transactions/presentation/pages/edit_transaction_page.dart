@@ -1,3 +1,5 @@
+import 'package:expense_app/core/localization/app_string_key.dart';
+import 'package:expense_app/core/localization/app_strings_context.dart';
 import 'package:expense_app/features/transactions/domain/transaction_model.dart';
 import 'package:expense_app/features/transactions/presentation/controllers/transaction_controller.dart';
 import 'package:expense_app/features/transactions/presentation/widgets/transaction_form.dart';
@@ -53,11 +55,17 @@ class _EditTransactionPageState extends ConsumerState<EditTransactionPage> {
 
       context.pop();
       messenger.showSnackBar(
-        const SnackBar(content: Text('Đã cập nhật giao dịch')),
+        SnackBar(
+          content: Text(context.strings.t(AppStringKey.transactionUpdated)),
+        ),
       );
     } catch (error) {
       messenger.showSnackBar(
-        SnackBar(content: Text('Không thể cập nhật giao dịch: $error')),
+        SnackBar(
+          content: Text(
+            '${context.strings.t(AppStringKey.couldNotUpdateTransaction)} $error',
+          ),
+        ),
       );
     } finally {
       if (mounted) {
@@ -75,7 +83,7 @@ class _EditTransactionPageState extends ConsumerState<EditTransactionPage> {
     );
 
     return AppScaffold(
-      title: 'Sửa giao dịch',
+      title: context.strings.t(AppStringKey.editTransaction),
       contentMaxWidth: 680,
       child: transactionState.when(
         loading: () => const SizedBox(
@@ -87,7 +95,7 @@ class _EditTransactionPageState extends ConsumerState<EditTransactionPage> {
             height: 320,
             child: Center(
               child: Text(
-                'Không thể tải giao dịch.\n$error',
+                '${context.strings.t(AppStringKey.couldNotLoadTransaction)}\n$error',
                 textAlign: TextAlign.center,
                 style: const TextStyle(height: 1.5),
               ),
@@ -100,10 +108,12 @@ class _EditTransactionPageState extends ConsumerState<EditTransactionPage> {
           );
           if (transaction == null) {
             return EmptyState(
-              title: 'Không tìm thấy giao dịch',
-              message: 'Giao dịch này có thể đã bị xóa hoặc chưa được tải.',
+              title: context.strings.t(AppStringKey.transactionNotFound),
+              message: context.strings.t(
+                AppStringKey.transactionNotFoundMessage,
+              ),
               icon: Icons.search_off_rounded,
-              actionLabel: 'Quay lại giao dịch',
+              actionLabel: context.strings.t(AppStringKey.backToTransactions),
               onActionPressed: () => context.go('/transactions'),
             );
           }
@@ -111,8 +121,12 @@ class _EditTransactionPageState extends ConsumerState<EditTransactionPage> {
           return TransactionForm(
             key: ValueKey<String>(transaction.id),
             initialTransaction: transaction,
-            description: 'Chỉnh sửa thông tin giao dịch và lưu lại thay đổi.',
-            submitButtonLabel: 'Cập nhật giao dịch',
+            description: context.strings.t(
+              AppStringKey.editTransactionDescription,
+            ),
+            submitButtonLabel: context.strings.t(
+              AppStringKey.updateTransactionButton,
+            ),
             isSubmitting: _isSubmitting,
             amountFieldKey: const Key('edit_transaction_amount_field'),
             submitButtonKey: const Key('edit_transaction_submit_button'),

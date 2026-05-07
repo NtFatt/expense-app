@@ -1,5 +1,7 @@
 # Phase 9 — Export Architecture Document
 
+> Historical 9A design document. For the current implemented export status and smoke results, see `docs/PHASE_9_EXPORT_SMOKE_REPORT.md` and `docs/PROJECT_PROGRESS_CHECKLIST.md`.
+
 > Created during Phase 9A. Contains design decisions, data source mapping, and implementation notes for Phase 9B/9C/9D. No real export code is implemented in Phase 9A.
 
 ---

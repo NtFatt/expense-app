@@ -1,5 +1,7 @@
 # Phase 8A — Persistence Readiness Audit
 
+> Historical 8A audit snapshot from 2026-05-03. For the current canonical persistence policy and final Phase 8 decision, see `docs/PHASE_8_STATUS_RECONCILIATION.md` and `docs/PROJECT_PROGRESS_CHECKLIST.md`.
+
 **Date:** 2026-05-03
 **Auditor:** Senior Flutter Engineer (autonomous audit)
 **Scope:** Persistence readiness for enabling Drift/SQLite persistence in Phase 8B

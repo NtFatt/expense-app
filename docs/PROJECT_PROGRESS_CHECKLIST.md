@@ -1,941 +1,113 @@
-# Expense App — Project Progress Checklist
+# Expense App - Project Progress Checklist
 
 ## 0. Project Snapshot
 
 - Project: Expense App
 - Path: `D:\LEARNCODE\Project_CV\expense_app`
 - Stack: Flutter + Dart + Riverpod + GoRouter + Drift scaffold + fl_chart
-- Current run target: Chrome/web
-- Current default repository: Platform-aware (`InMemoryTransactionRepository` on web, `DriftTransactionRepository` on native)
-- Persistence status: Drift scaffolded and verified on Windows (Phase 8C); native uses Drift as active repository; web uses InMemory fallback via conditional imports
-- Current validation status: `flutter analyze` PASS (3 info), `flutter test` PASS (133 tests), `flutter run -d chrome` PASS, `flutter build windows --release` PASS
-- Last updated: `2026-05-05` (Phase 9D `[x] DONE` · 133 tests · web browser download implemented · web/chrome/windows all validated)
+- Current target: Chrome/web
+- Current default repository: `InMemoryTransactionRepository`
+- Native persistence path present: conditional native Drift repositories exist for transactions and Pay Later, but they are not the default path on the current target
+- Pay Later default repository on current target: `InMemoryPayLaterRepository`
+- Export implementation: code is present in `lib/features/reports/`, but end-to-end export remains a review item until runtime smoke is treated as canonical evidence
+- Last updated: `2026-05-07`
+- Current active task: Reconcile native persistence/export claims with the current web-first runtime and keep the checklist conservative
+- Next recommended task: Run a focused native smoke pass if Phase 8 / Phase 9 / Phase 10B need promotion beyond review
 
 ## 1. Status Legend
 
-- `[ ] NOT STARTED` — chưa làm
-- `[~] IN PROGRESS` — đang làm
-- `[x] DONE` — đã làm xong và đã validate
-- `[!] BLOCKED` — bị chặn
-- `[L] LITE DONE` — làm bản nhẹ/scaffold/tạm, chưa production-ready
-- `[R] REVIEW` — đã code xong, đang cần kiểm tra/review
-- `[F] FAILED` — đã thử nhưng fail validation
+- `[ ] NOT STARTED`
+- `[~] IN PROGRESS`
+- `[x] DONE`
+- `[!] BLOCKED`
+- `[L] LITE DONE`
+- `[R] REVIEW`
+- `[F] FAILED`
 
-## 2. High-Level Roadmap
+## 2. Phase Checklist
 
-| Phase | Name | Status | Summary | Validation | Notes |
-|---|---|---:|---|---|---|
-| 0 | Environment Setup | `[x]` | Môi trường Flutter/Git/VS Code sẵn sàng, app chạy Chrome | analyze/test pass | Android toolchain chưa xanh hoàn toàn nhưng không block web |
-| 1 | Project Structure Refactor | `[x]` | Tách `app/`, `core/`, `features/`, `shared/` | analyze/test pass | `main.dart` chỉ bootstrap |
-| 2 | Add Transaction UI | `[x]` | Hoàn thiện form thêm giao dịch và route `/transactions/new` | analyze/test pass | Category đổi theo type, có date picker |
-| 3 | Domain Models | `[x]` | Tạo `TransactionType`, `TransactionModel`, `CategoryModel` | analyze/test pass | Có `copyWith`, `signedAmount`, `displayTitle` |
-| 4 | Riverpod Runtime State | `[x]` | Runtime state bằng Riverpod với add/delete/update dashboard | analyze/test pass | Default repo là in-memory |
-| 5 | Drift/SQLite Scaffold | `[L]` | Đã scaffold Drift table/database/repository | build_runner/analyze/test pass | Scaffolded; Phase 8B enables on native |
-| 6 | MVP UX Polish | `[x]` | Bottom nav, statistics, reports, polish UX các page chính | pub get/analyze/test/chrome pass | Chrome/web vẫn an toàn |
-| 7 | Filter/Search/Monthly View/Edit Transaction | `[x]` | Phase 7A–7D done (edit, filter/search UI, monthly dashboard, monthly statistics) | analyze/test/chrome pass for 7D | Phase 7 COMPLETE |
-| 8 | Enable SQLite/Drift Persistence | `[x]` | Drift enabled on native, verified on Windows, documented and hardened (8A–8D all DONE) | analyze/test/chrome/windows persistence QA pass | Phase 8 COMPLETE; next Phase 9 CSV/PDF Export or Phase 10 Android APK |
-| 9 | CSV/PDF Export | `[x]` | 9A ✅ · 9B ✅ · 9C ✅ · 9D ✅ (133 tests · web/chrome/windows validated) | 133 tests | Phase 9 COMPLETE; next Phase 10 Android or Phase 11 QA |
-| 10 | Android Toolchain + APK Build | `[ ]` | Chưa xử lý Android toolchain/APK | Chưa chạy | Hiện chưa ưu tiên |
-| 11 | Final QA + Demo Script | `[ ]` | Chưa làm checklist demo cuối | Chưa chạy | Để sau MVP ổn định |
-| 12 | Optional Cloud Sync/Auth | `[ ]` | Chưa bắt đầu | Chưa chạy | Ngoài scope hiện tại |
+- `[x] Phase 0 - Environment setup`
+  Done note: Flutter project setup, Chrome target workflow, and test harness are usable. Files/modules: `pubspec.yaml`, `lib/main.dart`, `test/`. Validated by `flutter analyze`, `flutter test`, and `flutter run -d chrome --web-run-headless --no-resident`.
 
-## 3. Detailed Phase Checklist
+- `[x] Phase 1 - Project structure refactor`
+  Done note: Feature-first app structure is present across `lib/app/`, `lib/core/`, `lib/features/`, and `lib/shared/`. Files/modules: app shell plus feature folders. Validated by repository inspection and passing analyze/test.
 
-### Phase 0 — Environment Setup
+- `[x] Phase 2 - Add transaction UI`
+  Done note: Add-transaction routing and form flow are implemented. Files/modules: `lib/app/router.dart`, `lib/features/transactions/presentation/pages/add_transaction_page.dart`, `lib/features/transactions/presentation/widgets/transaction_form.dart`. Validated by widget tests and Chrome launch.
 
-**Status:** `[x] DONE`
-**Goal:** Hoàn thiện môi trường phát triển Flutter để có thể build, analyze, test và chạy app trên Chrome/web.
-**Scope:** Git, Flutter SDK, Dart qua Flutter, VS Code, Flutter extension, khởi tạo project và xác nhận app chạy được.
-**Files touched/expected:** `pubspec.yaml`, `lib/main.dart`, `test/widget_test.dart`, Flutter project scaffold mặc định.
+- `[x] Phase 3 - Domain models`
+  Done note: Transaction domain models and filter/month summary models exist. Files/modules: `lib/features/transactions/domain/`, `lib/features/categories/`. Validated by repository inspection and passing domain/widget tests.
 
-**Checklist:**
-- [x] Git installed and updated
-- [x] Flutter SDK installed
-- [x] Dart available through Flutter
-- [x] VS Code installed
-- [x] Flutter extension installed
-- [x] Project created at `D:\LEARNCODE\Project_CV\expense_app`
-- [x] App runs on Chrome
-- [x] `flutter analyze` pass
-- [x] `flutter test` pass
+- `[x] Phase 4 - Riverpod runtime state`
+  Done note: Repository abstraction, controller state, and provider wiring are implemented. Files/modules: `lib/features/transactions/data/`, `lib/features/transactions/presentation/controllers/transaction_controller.dart`, `lib/main.dart`. Validated by analyze/test and Chrome launch.
 
-**Validation:**
-- [x] `flutter analyze`
-- [x] `flutter test`
-- [x] `flutter run -d chrome`
+- `[L] Phase 5 - Drift/SQLite scaffold`
+  Status note: Drift database/table code and repository scaffold exist. Files/modules: `lib/core/database/`, `lib/features/transactions/data/drift_transaction_repository.dart`. Validated by code inspection and passing analyze/test; this is scaffold-level only.
 
-**Notes:**
-- Android toolchain still has missing cmdline-tools/licenses, but not blocking current Chrome/web development.
+- `[x] Phase 6 - MVP UX polish`
+  Done note: Dashboard/statistics/reports shells, shared widgets, and bottom navigation are implemented. Files/modules: `lib/shared/widgets/`, `lib/features/statistics/`, `lib/features/reports/`. Validated by analyze/test and Chrome launch.
 
-**Next step:**
-- Lock down project structure for maintainable feature-first development.
+- `[x] Phase 7 - Filter/Search/Monthly View/Edit Transaction`
+  Done note: Edit flow, filters, search, and month navigation are wired across transactions and statistics pages. Files/modules: `lib/app/router.dart`, `lib/features/transactions/presentation/pages/`, `lib/features/transactions/presentation/widgets/`, `lib/features/transactions/presentation/controllers/`, `lib/features/statistics/presentation/pages/statistics_page.dart`. Validated by widget tests and current passing test suite.
 
-### Phase 1 — Project Structure Refactor
+- `[R] Phase 8 - Enable SQLite/Drift persistence`
+  Status note: Drift/SQLite transaction persistence is implemented behind the native conditional factory, but the current target/default runtime still uses `InMemoryTransactionRepository`. Files/modules: `lib/core/database/`, `lib/features/transactions/data/drift_transaction_repository.dart`, `lib/features/transactions/presentation/controllers/repository_factory.dart`, `repository_factory_stub.dart`, `repository_factory_native.dart`. Validated by code inspection plus existing logged native validation history; do not treat this phase as fully enabled for the current web-first project snapshot.
 
-**Status:** `[x] DONE`
-**Goal:** Tách app khỏi `main.dart` và đặt nền kiến trúc rõ ràng theo `app/core/features/shared`.
-**Scope:** Tách app shell, router, theme, dashboard page và reusable widgets.
-**Files touched/expected:** `lib/main.dart`, `lib/app/app.dart`, `lib/app/router.dart`, `lib/app/theme.dart`, `lib/core/constants/app_constants.dart`, `lib/core/utils/currency_formatter.dart`, `lib/shared/widgets/app_scaffold.dart`, `lib/shared/widgets/section_header.dart`, `lib/features/transactions/presentation/pages/dashboard_page.dart`, `lib/features/transactions/presentation/widgets/balance_card.dart`, `summary_card.dart`, `transaction_tile.dart`.
+- `[R] Phase 9 - CSV/PDF export`
+  Status note: Export generators, platform writers, and reports UI are present, including platform-specific writer branches for web and native. Files/modules: `lib/features/reports/data/`, `lib/features/reports/presentation/pages/reports_page.dart`, `test/csv_transaction_exporter_test.dart`, `test/local_report_export_service_test.dart`, `test/monthly_report_data_builder_test.dart`, `test/report_file_namer_test.dart`, `test/report_file_write_result_test.dart`. Validated by code inspection and existing logged command history; keep under review until real end-to-end export smoke is treated as canonical closure evidence.
 
-**Checklist:**
-- [x] Move app shell to `lib/app/app.dart`
-- [x] Move router to `lib/app/router.dart`
-- [x] Move theme to `lib/app/theme.dart`
-- [x] Keep `lib/main.dart` clean
-- [x] Create `core/`, `features/`, `shared/` structure
-- [x] Extract dashboard page
-- [x] Extract reusable widgets
+- `[x] Phase 9E - App preferences UI`
+  Done note: Language/theme preference modules and settings route are present. Files/modules: `lib/features/settings/`, `lib/core/localization/`, `lib/app/router.dart`. Validated by `test/settings_page_test.dart`, `test/app_locale_test.dart`, `test/app_preferences_controller_test.dart`, `test/app_preferences_test.dart`, and `test/app_strings_test.dart`.
 
-**Validation:**
-- [x] `flutter analyze`
-- [x] `flutter test`
+- `[x] Phase 9F - Pay Later & installment tracker`
+  Done note: Pay Later tracker domain, controller, page, dialogs, and repository factory split are present. Files/modules: `lib/features/pay_later/`, `lib/app/router.dart`, `lib/core/database/`. Validated by repository inspection and the Pay Later-focused tests under `test/`, including controller/page/summary/repository factory coverage.
 
-**Notes:**
-- App vẫn chạy được sau khi tách cấu trúc.
+- `[x] Phase 10 - Android toolchain + APK build`
+  Done note: Existing validation history in this repository records Android toolchain readiness, emulator detection, and APK build success. Files/modules: Android build/tooling plus current project configuration in `pubspec.yaml`. Validated by logged runs of `flutter doctor -v`, `flutter build apk --debug`, `flutter build apk --release`, `flutter devices`, and `flutter run -d emulator-5554 --no-resident`.
 
-**Next step:**
-- Build Add Transaction UI trên nền router/theme mới.
+- `[R] Phase 10B / 9F2 - Pay Later native persistence + Android export hardening`
+  Status note: Native Pay Later Drift tables/repository and Android-specific export writer hardening are present in code, but this checklist keeps the sub-phase conservative because the current target remains web-first and dedicated Pay Later export is still out of scope. Files/modules: `lib/core/database/`, `lib/features/pay_later/data/`, `lib/features/pay_later/presentation/controllers/pay_later_controller.dart`, `lib/features/reports/data/report_file_writer_native.dart`. Validated by code inspection and existing logged native smoke history.
 
-### Phase 2 — Add Transaction UI
+- `[ ] Phase 11 - Final QA + demo script`
+  Status note: No final QA/demo artifact was found in the inspected repository scope.
 
-**Status:** `[x] DONE`
-**Goal:** Tạo flow thêm giao dịch đủ dùng cho MVP trước khi gắn state thật.
-**Scope:** Route `/transactions/new`, form field, validation amount, date picker và điều hướng từ FAB.
-**Files touched/expected:** `lib/app/router.dart`, `lib/core/utils/date_formatter.dart`, `lib/features/transactions/presentation/pages/add_transaction_page.dart`, `lib/features/transactions/presentation/widgets/transaction_type_selector.dart`, `test/widget_test.dart`.
+- `[ ] Phase 12 - Optional cloud sync/auth`
+  Status note: No backend auth/sync implementation was found in the inspected repository scope.
 
-**Checklist:**
-- [x] Create `/transactions/new` route
-- [x] Create `AddTransactionPage`
-- [x] Add transaction type selector
-- [x] Add amount input
-- [x] Add category selector
-- [x] Add note input
-- [x] Add date picker
-- [x] Add submit button
-- [x] Validate amount required
-- [x] Validate amount > 0
-- [x] Reset category when type changes
+## 3. Current Risks / Blockers
 
-**Validation:**
-- [x] `flutter analyze`
-- [x] `flutter test`
-
-**Notes:**
-- Flow submit ban đầu đã sẵn sàng để nối sang Riverpod state.
-
-**Next step:**
-- Chuẩn hóa domain model để tránh dùng dữ liệu ad-hoc trong UI.
-
-### Phase 3 — Domain Models
-
-**Status:** `[x] DONE`
-**Goal:** Tạo model/domain đủ sạch để state, UI và repository cùng dùng chung.
-**Scope:** Enum type giao dịch, transaction entity, category entity và default categories.
-**Files touched/expected:** `lib/features/transactions/domain/transaction_type.dart`, `lib/features/transactions/domain/transaction_model.dart`, `lib/features/categories/domain/category_model.dart`, `lib/features/categories/data/default_categories.dart`, cập nhật `dashboard_page.dart`, `transaction_tile.dart`, `add_transaction_page.dart`.
-
-**Checklist:**
-- [x] Create `TransactionType` enum
-- [x] Create `TransactionModel`
-- [x] Add `copyWith`
-- [x] Add `signedAmount` getter
-- [x] Add `displayTitle` getter
-- [x] Create `CategoryModel`
-- [x] Create default categories
-
-**Validation:**
-- [x] `flutter analyze`
-- [x] `flutter test`
-
-**Notes:**
-- `TransactionModel.amount` được giữ là số dương; dấu âm/dương được suy ra từ `TransactionType`.
-
-**Next step:**
-- Nối runtime state bằng Riverpod để dashboard và transactions list cập nhật thật.
-
-### Phase 4 — Riverpod Runtime State
-
-**Status:** `[x] DONE`
-**Goal:** Cho app hoạt động với runtime state thật trước khi bật persistence local.
-**Scope:** ProviderScope, repository abstraction, in-memory repository, controller, state calculations và submit/delete flow.
-**Files touched/expected:** `lib/main.dart`, `lib/features/transactions/data/transaction_repository.dart`, `lib/features/transactions/data/in_memory_transaction_repository.dart`, `lib/features/transactions/presentation/controllers/transaction_controller.dart`, `lib/features/transactions/presentation/pages/dashboard_page.dart`, `transactions_page.dart`, `add_transaction_page.dart`, `lib/shared/widgets/empty_state.dart`.
-
-**Checklist:**
-- [x] Add `ProviderScope`
-- [x] Create `TransactionRepository` contract
-- [x] Create `InMemoryTransactionRepository`
-- [x] Create `TransactionController`
-- [x] Create `TransactionState`
-- [x] Dashboard reads from provider
-- [x] Add transaction updates runtime state
-- [x] Delete transaction updates runtime state
-- [x] Compute total income
-- [x] Compute total expense
-- [x] Compute balance
-- [x] Compute recent transactions
-
-**Validation:**
-- [x] `flutter analyze`
-- [x] `flutter test`
-
-**Notes:**
-- Dữ liệu runtime mất sau reload vì repo mặc định là in-memory (đã fix ở Phase 8B cho native).
-
-**Next step:**
-- Chuẩn bị Drift scaffold nhưng chưa làm hỏng web/Chrome demo.
-
-### Phase 5 — Drift/SQLite Scaffold
-
-**Status:** `[L] LITE DONE`
-**Goal:** Chuẩn bị persistence layer production-grade nhưng chưa bật mặc định khi web là target chính.
-**Scope:** Drift dependencies, table, database, generated code và repository mapping.
-**Files touched/expected:** `pubspec.yaml`, `lib/core/database/tables/transactions_table.dart`, `lib/core/database/app_database.dart`, `lib/core/database/app_database.g.dart`, `lib/features/transactions/data/drift_transaction_repository.dart`.
-
-**Checklist:**
-- [x] Add Drift dependencies
-- [x] Create transactions table
-- [x] Create `AppDatabase`
-- [x] Generate Drift code (`dart run build_runner build --delete-conflicting-outputs`)
-- [x] Create `DriftTransactionRepository`
-- [x] Scaffold complete (enablement deferred to Phase 8B)
-
-**Validation:**
-- [x] `dart run build_runner build --delete-conflicting-outputs`
-- [x] `flutter analyze`
-- [x] `flutter test`
-- [x] Chrome safe (Drift not default on web)
-
-**Notes:**
-- Drift scaffolded and code-generated; enabled on native via Phase 8B conditional imports.
-- Web/Chrome remains on `InMemoryTransactionRepository` via `repository_factory_stub.dart`.
-
-**Next step:**
-- Phase 6 — MVP UX Polish.
-
-### Phase 6 — MVP UX Polish
-
-**Status:** `[x] DONE`
-**Goal:** Làm app đủ đẹp, rõ và dễ demo với navigation, statistics và reports preparation.
-**Scope:** Bottom navigation, dashboard polish, transactions summary/delete confirm, add transaction polish, statistics thật bằng fl_chart, reports cards, test update.
-**Files touched/expected:** `lib/shared/widgets/app_bottom_navigation.dart`, `metric_card.dart`, `app_scaffold.dart`, `lib/features/transactions/presentation/pages/dashboard_page.dart`, `transactions_page.dart`, `add_transaction_page.dart`, `lib/features/transactions/presentation/widgets/transaction_summary_panel.dart`, `delete_transaction_dialog.dart`, `lib/features/statistics/presentation/pages/statistics_page.dart`, `lib/features/statistics/presentation/widgets/*`, `lib/features/reports/presentation/pages/reports_page.dart`, `lib/features/reports/presentation/widgets/report_action_card.dart`, `test/widget_test.dart`.
-
-**Checklist:**
-- [x] Add bottom navigation
-- [x] Dashboard UX polish
-- [x] Transactions summary panel
-- [x] Delete confirmation dialog
-- [x] Delete SnackBar
-- [x] Statistics real data from provider
-- [x] `fl_chart` spending chart
-- [x] Reports page polished with CSV/PDF/Backup cards (UI only — export not yet implemented)
-- [x] Keep InMemory repository as default (web-safe)
-- [x] Preserve Drift scaffold
-- [x] Update widget tests
-
-**Validation:**
-- [x] `flutter pub get`
-- [x] `flutter analyze`
-- [x] `flutter test`
-- [x] `flutter run -d chrome --web-run-headless --no-resident`
-
-**Notes:**
-- Reports vẫn là UI preparation, chưa export thật (Phase 9).
-- Statistics đã đọc số liệu thật từ provider state.
-
-**Next step:**
-- Start Phase 7 with filters, monthly view and edit transaction flow.
-
-### Phase 7 — Filter/Search/Monthly View/Edit Transaction
-
-**Status:** `[x] DONE` (7A done; 7B done; 7C done; 7D done)
-
-#### Phase 7A — Edit Transaction Foundation
-
-**Status:** `[x] DONE`
-**Goal:** Add edit transaction flow and extract shared form component to avoid duplication.
-**Scope:** Edit route, `EditTransactionPage`, shared `TransactionForm`, `updateTransaction` in controller, repository interface updates, widget test.
-**Files touched:** `router.dart` (+edit route `/transactions/:id/edit`), `edit_transaction_page.dart` (new), `transaction_form.dart` (new shared form), `transaction_controller.dart` (+`updateTransaction`, `transactionById`), `add_transaction_page.dart` (refactored to use shared form), `in_memory_transaction_repository.dart` (+`updateTransaction`), `drift_transaction_repository.dart` (+`updateTransaction`), `transaction_repository.dart` (+`updateTransaction` abstract method), `widget_test.dart` (+edit navigation test).
-
-**Checklist:**
-- [x] Add edit transaction route `/transactions/:id/edit`
-- [x] Create `EditTransactionPage` with loading/error/empty states
-- [x] Create shared `TransactionForm` widget (reused by add and edit)
-- [x] Add `updateTransaction` to `TransactionRepository` contract
-- [x] Add `updateTransaction` to `InMemoryTransactionRepository`
-- [x] Add `updateTransaction` to `DriftTransactionRepository`
-- [x] Add `updateTransaction` to `TransactionController`
-- [x] Add `transactionById` helper to `TransactionState`
-- [x] Refactor `AddTransactionPage` to use shared `TransactionForm`
-- [x] Add widget test for edit navigation
-- [x] `flutter analyze` pass
-- [x] `flutter test` pass
-- [x] `flutter run -d chrome` smoke pass
-
-**Validation:**
-- [x] `flutter analyze`
-- [x] `flutter test`
-- [x] `flutter run -d chrome --web-run-headless --no-resident`
-
-**Notes:**
-- `TransactionForm` is shared between add and edit, eliminating code duplication.
-- Form pre-fills with existing transaction data on edit.
-- Phase 7A scope limited to edit foundation; filter/search/monthly view are Phase 7B/7C/7D.
-
-**Next step:**
-- Phase 7C — Transactions Filter UI.
-
-#### Phase 7B — Filter/Search Controller
-
-**Status:** `[x] DONE`
-**Goal:** Add dedicated filter/search/month state controller to support monthly view and type filtering.
-**Scope:** Filter state model, filter controller, month selector, type filter (all/income/expense), search query.
-**Files touched:** `transaction_filters.dart` (new: `TransactionTypeFilter` enum, `TransactionFilterState`, helpers, `applyTransactionFilters`), `transaction_filter_controller.dart` (new: `TransactionFilterController`, `transactionFilterControllerProvider`).
-
-**Checklist:**
-- [x] Design `TransactionFilterState`
-- [x] Create `TransactionFilterController`
-- [x] Create `TransactionTypeFilter`: all / income / expense
-- [x] Create month selection state (`normalizeMonth`, `isSameMonth`)
-- [x] Add `applyTransactionFilters()`
-- [x] Filter by month
-- [x] Filter by type
-- [x] Search by category/note/displayTitle
-- [x] Add tests for filter logic
-
-**Validation:**
-- [x] `flutter analyze`
-- [x] `flutter test`
-- [x] `flutter run -d chrome --web-run-headless --no-resident`
-
-**Notes:**
-- Filter logic is domain-level and fully testable (30 filter tests + 10 controller tests).
-- UI wiring is intentionally deferred to Phase 7C.
-- Dashboard/statistics monthly integration is intentionally deferred to Phase 7D.
-- `applyTransactionFilters` is a pure function that does not mutate the input list.
-
-**Next step:**
-- Phase 7C — Transactions Filter UI.
-
-#### Phase 7C — Transactions Filter UI
-
-**Status:** `[x] DONE`
-**Goal:** Wire filter state to UI with month selector, type chips, and search bar on the transactions page.
-**Scope:** Filter bar widget, month selector widget, type filter chips, search input, wiring to controller, filtered summary panel.
-**Files touched:** `transaction_filter_bar.dart` (new: `TransactionFilterBar` with search + type chips + month selector), `month_selector.dart` (new: `MonthSelector` with prev/next buttons and month label), `filtered_transactions_summary.dart` (new: filtered totals for summary panel), `transactions_page.dart` (refactored: wired `transactionFilterControllerProvider` and `applyTransactionFilters`), `transaction_filter_controller.dart` (+`clearNonMonthFilters`), `widget_test.dart` (+5 Phase 7C widget tests).
-
-**Checklist:**
-- [x] Create MonthSelector widget
-- [x] Create TransactionFilterBar widget
-- [x] Wire month selector
-- [x] Wire type filter chips
-- [x] Wire search input
-- [x] Show active filter count
-- [x] TransactionsPage uses filtered transactions
-- [x] Summary panel uses filtered transactions
-- [x] Empty state distinguishes no data vs no matching result
-- [x] Add tests for filter/search UI
-
-**Validation:**
-- [x] `flutter analyze`
-- [x] `flutter test`
-- [x] `flutter run -d chrome --web-run-headless --no-resident`
-
-**Notes:**
-- `FilteredTransactionsSummary` widget created to avoid breaking Dashboard's use of `TransactionSummaryPanel`.
-- Month label uses static Vietnamese month names (avoids `initializeDateFormatting` requirement in tests).
-- Filter UI is wired only on TransactionsPage; Dashboard and Statistics monthly integration remain Phase 7D.
-- `clearNonMonthFilters()` added to controller to reset search + type without resetting month.
-- All 49 tests pass (44 original + 5 new Phase 7C widget tests).
-
-**Next step:**
-- Phase 7D — Monthly Dashboard + Statistics.
-
-#### Phase 7D — Monthly Dashboard + Statistics
-
-**Status:** `[x] DONE`
-**Goal:** Make Dashboard and Statistics respect the selected month from `transactionFilterControllerProvider`, independent of search/type filters.
-**Scope:** Month-only filter helper, monthly summary domain model, Dashboard monthly wiring, Statistics monthly wiring, reusable MonthSelector on all pages.
-**Files touched:** `transaction_filters.dart` (+`filterTransactionsByMonth`), `monthly_transaction_summary.dart` (new: `MonthlyTransactionSummary`, `CategoryExpenseSummary`), `transaction_controller.dart` (removed duplicate `CategoryExpenseSummary`, added export), `dashboard_page.dart` (monthly totals, month selector, month-aware recent transactions), `statistics_page.dart` (monthly summary cards, chart, breakdown, top category), `widget_test.dart` (+6 Phase 7D widget tests).
-
-**Checklist:**
-- [x] Dashboard shows monthly totals based on selected month
-- [x] Dashboard ignores search/type filters (uses month-only filter)
-- [x] Statistics page shows monthly breakdown
-- [x] Statistics ignores search/type filters (uses month-only filter)
-- [x] Charts respect selected month
-- [x] No-data states for months with no transactions
-- [x] Reuse MonthSelector on Dashboard and Statistics
-- [x] Add tests for monthly dashboard/statistics
-
-**Validation:**
-- [x] `flutter analyze`
-- [x] `flutter test`
-- [x] `flutter run -d chrome --web-run-headless --no-resident`
-
-**Notes:**
-- `filterTransactionsByMonth()` added to `transaction_filters.dart` — month-only, no type/search.
-- `MonthlyTransactionSummary` created in domain layer with `totalIncome`, `totalExpense`, `balance`, `recentTransactions`, `expenseByCategory`, `expenseCategorySummaries`, `topExpenseCategory`.
-- `CategoryExpenseSummary` moved from `transaction_controller.dart` to `monthly_transaction_summary.dart` and re-exported.
-- Dashboard: uses month-only filter, shows monthly balance/income/expense, MonthSelector, month-aware recent transactions.
-- Statistics: uses month-only filter, shows monthly summary cards, chart, breakdown, top category.
-- Phase 7A/7B/7C TransactionsPage filter (month+type+search) remains intact.
-- Phase 7 is now complete.
-
-**Next step:**
-- Phase 8 — Enable SQLite/Drift Persistence.
-
-### Phase 8 — Enable SQLite/Drift Persistence
-
-**Status:** `[x] DONE` (8A audit ✅ · 8B switching ✅ · 8C QA ✅ · 8D hardening/docs ✅)
-**Goal:** Switch from runtime memory state to real local persistence on native targets while keeping web fallback safe.
-
-#### Phase 8A — Persistence Readiness Audit
-
-**Status:** `[x] DONE`
-**Goal:** Audit Drift schema, repository contract, mapping, provider wiring, and web/native safety before enabling persistence.
-
-**Checklist:**
-- [x] Audit Drift dependencies
-- [x] Audit transactions table schema
-- [x] Audit AppDatabase and generated code
-- [x] Audit TransactionRepository contract
-- [x] Audit InMemoryTransactionRepository
-- [x] Audit DriftTransactionRepository
-- [x] Audit TransactionModel mapping
-- [x] Audit provider wiring and default repository
-- [x] Audit web/native safety
-- [x] Check Flutter devices/doctor
-- [x] Create `docs/PHASE_8A_PERSISTENCE_READINESS_AUDIT.md`
-- [x] Run validation
-
-**Validation:**
-- [x] `flutter analyze` — PASS
-- [x] `flutter test` — PASS (55 tests)
-- [x] `flutter run -d chrome --web-run-headless --no-resident` — PASS
-- [x] `flutter devices` — PASS (Windows, Chrome, Edge available)
-- [x] `flutter doctor` — WARN (Android toolchain incomplete, expected)
-
-**Notes:**
-- Phase 8C (native persistence QA) has been completed using Windows target.
-- All persistence operations verified: add/edit/delete survive app restart.
-- Dashboard/statistics/filter-search all correct after restart.
-- Full audit report at `docs/PHASE_8A_PERSISTENCE_READINESS_AUDIT.md`.
-
-**Next step:**
-- Phase 8B — Repository Switching Strategy.
-
-#### Phase 8B — Repository Switching Strategy
-
-**Status:** `[x] DONE`
-**Goal:** Switch native targets to Drift repository while keeping web/Chrome on InMemory repository.
-
-**Checklist:**
-- [x] Add conditional import `repository_factory.dart` with `repository_factory_stub.dart` / `repository_factory_native.dart`
-- [x] `repository_factory_stub.dart` returns `InMemoryTransactionRepository` (web stub)
-- [x] `repository_factory_native.dart` returns `DriftTransactionRepository(AppDatabase())` on native, `InMemoryTransactionRepository` on web
-- [x] `transaction_controller.dart` uses `createDefaultTransactionRepository()` via conditional import
-- [x] `app_database.dart` excluded from web compilation tree by conditional import
-- [x] `TransactionType.fromName` hardened with `orElse` fallback to `expense`
-- [x] Add `TransactionType` unit tests (`transaction_type_test.dart`, 11 tests)
-- [x] Fix widget tests to override `transactionRepositoryProvider` with `InMemoryTransactionRepository`
-- [x] Validate Chrome remains green
-- [x] `flutter analyze` and `flutter test` pass
-
-**Validation:**
-- [x] `flutter analyze` — PASS
-- [x] `flutter test` — PASS (66 tests: 30 filter + 10 controller + 11 transaction_type + 15 widget)
-- [x] `flutter run -d chrome --web-run-headless --no-resident` — PASS
-- [x] `flutter run -d windows` — PASS (Phase 8C: app launched and ran on Windows after enabling Developer Mode)
-
-**Notes:**
-- Web/Chrome uses `InMemoryTransactionRepository` via `repository_factory_stub.dart`.
-- Native (Windows/Android) uses `DriftTransactionRepository(AppDatabase())` via `repository_factory_native.dart`.
-- `app_database.dart` is excluded from web compilation tree by conditional import — no `dart:ffi` leak on web.
-- `TransactionType.fromName` now normalizes input (trim + lowercase) and falls back to `expense` for unknown strings.
-- Widget tests override `transactionRepositoryProvider` with `InMemoryTransactionRepository` to avoid native DB in tests.
-- Phase 8B complete. Persistence verification on native done in Phase 8C using Windows target.
-- Windows Developer Mode was successfully enabled before Phase 8C testing.
-- Phase 8D is the final sub-phase.
-
-**Next step:**
-- Phase 8C — Native Persistence QA.
-
-#### Phase 8C — Native Persistence QA
-
-**Status:** `[x] DONE`
-**Goal:** Verify that add/edit/delete transactions truly persist after app restart on native target (Windows/Android).
-
-**Checklist:**
-- [x] Run app on Windows native target (`flutter run -d windows`)
-- [x] Add a transaction and restart the app
-- [x] Verify add persists after restart
-- [x] Verify edit persists after restart
-- [x] Verify delete persists after restart
-- [x] Verify monthly dashboard/statistics are correct after restart
-- [x] Verify transactions filter/search after restart
-- [x] Web/Chrome fallback remains safe
-
-**Validation:**
-- [x] `flutter run -d windows` — PASS (after enabling Developer Mode)
-- [x] Manual restart persistence smoke test — PASS
-- [x] Add transaction persists after restart — PASS
-- [x] Edit transaction persists after restart — PASS
-- [x] Delete transaction does not reappear after restart — PASS
-- [x] Dashboard monthly totals correct after restart — PASS
-- [x] Statistics monthly breakdown correct after restart — PASS
-- [x] Transactions filter/search works after restart — PASS
-- [x] `flutter analyze` — PASS (Phase 8C regression)
-- [x] `flutter test` — PASS (Phase 8C regression)
-- [x] `flutter run -d chrome --web-run-headless --no-resident` — PASS (web fallback safe)
-
-**Notes:**
-- Windows Developer Mode enabled successfully.
-- `flutter run -d windows` launched Drift-backed native app without errors.
-- All persistence operations (add/edit/delete) survive app restart.
-- Dashboard and Statistics monthly views reflect persisted data correctly after restart.
-- Filter/search on TransactionsPage works correctly on persisted data.
-- Web/Chrome remains on `InMemoryTransactionRepository` — no regression.
-- Phase 8D (hardening/migration/docs) is the final sub-phase before Phase 8 can be marked DONE.
-
-**Next step:**
-- Phase 8D — Hardening, Migration, Documentation.
-
-#### Phase 8D — Hardening, Migration, Documentation
-
-**Status:** `[x] DONE`
-**Goal:** Document migration strategy, persistence behavior, and harden repository layer where needed.
-
-**Checklist:**
-- [x] Document migration strategy
-- [x] Document web/native repository behavior
-- [x] Document verified Windows native persistence QA (Phase 8C)
-- [x] Audit repository error handling
-- [x] Add or confirm persistence-related tests where feasible
-- [x] Update README with persistence section
-- [x] Create `docs/PHASE_8D_PERSISTENCE_HARDENING.md`
-- [x] Mark Phase 8 DONE after validation
-
-**Validation:**
-- [x] `flutter analyze` — PASS (no issues found)
-- [x] `flutter test` — PASS (66 tests)
-- [x] `flutter run -d chrome --web-run-headless --no-resident` — PASS (web fallback safe)
-- [x] Phase 8C manual Windows persistence QA — PASS (add/edit/delete survives restart)
-
-**Notes:**
-- Repository hardening audit: no changes required — all implementations are correct and consistent.
-- `InMemoryTransactionRepository.getTransactions()` returns unmodifiable list — no list leak.
-- Both `updateTransaction` implementations throw `StateError` for non-existent ids — consistent.
-- Both `deleteTransaction` implementations are idempotent — safe no-op for non-existent ids.
-- `TransactionType.fromName` already hardened with `orElse` fallback (fixed in Phase 8B).
-- Migration strategy documented: bump `schemaVersion`, add `onUpgrade`, regenerate with `build_runner`.
-- No `dart:ffi` code enters web bundle — conditional import excludes native code at compile time.
-- Automated native persistence integration tests deferred: manual Windows QA (Phase 8C) provides equivalent confidence.
-- Phase 8 is now complete. All four sub-phases (8A/8B/8C/8D) are DONE.
-
-**Next step:**
-- Phase 9C — PDF Export Implementation (Phase 9A/9B are done; PDF not yet implemented).
-
-### Phase 9 — CSV/PDF Export
-
-**Status:** `[~] IN PROGRESS` (9A: architecture & contracts ✅ · 9B CSV export ✅ · 9C/9D: NOT STARTED)
-**Goal:** Implement real report export.
-**Scope:** CSV export, PDF export, file save/share flow and success/failure UX.
-**Files touched/expected:** reports/export service files, repository/provider integrations, reports page actions.
-
-#### Phase 9A — Export Architecture & Contract
-
-**Status:** `[x] DONE`
-**Goal:** Design export domain contracts, service interface, file naming, and audit PDF font strategy. No real export implementation.
-
-**Checklist:**
-- [x] Audit `ReportsPage` and `ReportActionCard`
-- [x] Audit data sources: `transactionControllerProvider`, `transactionFilterControllerProvider`, `filterTransactionsByMonth`
-- [x] Create `ReportExportFormat` enum (`csv`, `pdf`)
-- [x] Create `ReportExportRequest` immutable model
-- [x] Create `ReportExportResult` immutable model
-- [x] Create `ReportExportService` abstract interface (no real implementation)
-- [x] Create `ReportFileNamer` pure-Dart utility
-- [x] Audit PDF font strategy for Vietnamese Unicode support
-- [x] Audit pubspec.yaml packages (no new packages added)
-- [x] Create `docs/phase-9-export-architecture.md`
-- [x] Verify `ReportsPage` is not polluted with export logic
-- [x] Run validation
-
-**Files created:**
-- `lib/features/reports/domain/report_export_format.dart`
-- `lib/features/reports/domain/report_export_request.dart`
-- `lib/features/reports/domain/report_export_result.dart`
-- `lib/features/reports/data/report_export_service.dart`
-- `lib/features/reports/data/report_file_namer.dart`
-- `docs/phase-9-export-architecture.md`
-
-**Notes:**
-- CSV export data source: `TransactionRepository.getTransactions()` via `transactionControllerProvider` (full unfiltered list).
-- PDF export data source: `filterTransactionsByMonth(transactions, selectedMonth)` using `transactionFilterControllerProvider.selectedMonth`.
-- No real CSV/PDF generation in 9A.
-- No file save in 9A.
-- `ReportsPage` buttons remain as "coming soon" SnackBar.
-- No Vietnamese Unicode font asset exists; TODO documented for Phase 9C.
-- `pdf` and `printing` packages not added; TODO documented for Phase 9C.
-- `path_provider` already in `pubspec.yaml` — available for native file save in 9B/9C.
-- `intl` already in `pubspec.yaml` — available for PDF date/number formatting.
-
-**Validation:**
-- [x] `flutter analyze` — PASS (Phase 9A)
-- [x] `flutter test` — PASS (Phase 9A)
-
-**Next step:**
-- Phase 9B — CSV Export Implementation.
-
-#### Phase 9B — CSV Export Implementation
-
-**Status:** `[x] DONE`
-**Goal:** Implement real CSV export with Save As dialog and web-safe fallback.
-
-**Checklist:**
-- [x] Implement `CsvTransactionExporter` pure-Dart CSV serializer
-- [x] UTF-8 BOM prepended for Excel Vietnamese text support
-- [x] Correct CSV escaping (comma, quote, newline, carriage return)
-- [x] CSV includes signed_amount column
-- [x] Sort by transactionDate desc, then createdAt desc (no mutation)
-- [x] Create `ReportFileWriteResult` enum + model for saved/cancelled/unsupported
-- [x] Update `ReportFileWriter` interface to return `ReportFileWriteResult`
-- [x] Native writer: `file_selector` Save As dialog (user picks path; no auto-save)
-- [x] Stub writer: returns `unsupported` on web (no crash)
-- [x] `LocalReportExportService` handles all three write result states
-- [x] CSV export asks user for destination path on native
-- [x] CSV export does not auto-save to app documents directory
-- [x] User cancel is handled without writing file
-- [x] Wire `ReportsPage` CSV button to `reportExportServiceProvider`
-- [x] ReportsPage CSV card: loading guard, error state, empty state
-- [x] Keep PDF/Backup cards as coming soon
-- [x] Add 6 `ReportFileWriteResult` tests
-- [x] Add 19 CSV exporter tests
-- [x] Add 9 `ReportFileNamer` tests
-- [x] Add 13 `LocalReportExportService` tests (saved/cancelled/unsupported)
-- [x] Run validation
-
-**Files created:**
-- `lib/features/reports/data/csv_transaction_exporter.dart`
-- `lib/features/reports/data/report_file_write_result.dart`
-- `lib/features/reports/data/report_file_writer.dart`
-- `lib/features/reports/data/report_file_writer_stub.dart`
-- `lib/features/reports/data/report_file_writer_native.dart`
-- `lib/features/reports/data/local_report_export_service.dart`
-- `lib/features/reports/data/report_export_service_provider.dart`
-- `test/csv_transaction_exporter_test.dart`
-- `test/report_file_namer_test.dart`
-- `test/local_report_export_service_test.dart`
-- `test/report_file_write_result_test.dart`
-
-**Files modified:**
-- `lib/features/reports/presentation/pages/reports_page.dart` (wired CSV export)
-- `pubspec.yaml` (+ `file_selector: ^1.1.0`)
-
-**Notes:**
-- CSV uses full transaction list from `transactionControllerProvider`.
-- Native CSV export opens Save As dialog (`file_selector`) and writes only to user-selected path.
-- `getApplicationDocumentsDirectory()` removed from CSV writer; no auto-save.
-- Web: `report_file_writer_stub.dart` returns `unsupported`; service returns message "chưa hỗ trợ".
-- PDF export remains Phase 9C (returns pending message from service).
-- Backup remains out of Phase 9 scope.
-- `dart:io` remains excluded from web bundle via conditional imports.
-
-**Validation:**
-- [x] `flutter analyze` — PASS (no issues)
-- [x] `flutter test` — PASS (115 tests: csv exporter + file namer + service + write result + filter/controller/widget)
-- [x] `flutter run -d chrome --web-run-headless --no-resident` — PASS (web fallback safe)
-- [x] `flutter build windows --release` — PASS (release exe built successfully)
-- [x] Windows release exe launched and exited cleanly (manual smoke)
-- [x] `flutter run -d windows` debug build — BLOCKED (Windows Defender file lock on LNK1168; use `--release` for native CSV smoke)
-
-**Next step:**
-- Phase 9C — PDF Export Implementation.
-
-#### Phase 9C — PDF Export Implementation
-
-**Status:** `[x] DONE`
-**Goal:** Implement real monthly PDF export with Vietnamese Unicode font support.
-
-**Checklist:**
-- [x] Add `pdf` and `printing` packages to `pubspec.yaml`
-- [x] Acquire OFL-licensed Vietnamese Unicode font (Noto Sans v2.015 from notofonts/latin-greek-cyrillic GitHub)
-- [x] Place font `.ttf` in `assets/fonts/` and register in `pubspec.yaml`
-- [x] Create `assets/fonts/README.md` with font acquisition instructions
-- [x] Create `MonthlyReportData` domain model
-- [x] Create `MonthlyReportDataBuilder`
-- [x] Create `PdfFontLoader` and `PdfFontBundle`
-- [x] Create `ReportFormatters` (pure-Dart, no BuildContext)
-- [x] Create `PdfMonthlyReportExporter` with `MonthlyPdfExporter` interface
-- [x] PDF includes: title, overview, category breakdown, transaction table, generatedAt
-- [x] PDF handles empty month / no-expense month gracefully
-- [x] PDF uses Save As dialog via existing `ReportFileWriter`
-- [x] Update `LocalReportExportService` with real PDF leg
-- [x] Update `reportExportServiceProvider` with PDF dependencies
-- [x] Wire `ReportsPage` PDF button to real export (with loading guard)
-- [x] Native writer accepts any file type (removed CSV-only type group restriction)
-- [x] Keep CSV behavior intact
-- [x] Keep Backup as coming soon
-- [x] Add 10 `MonthlyReportDataBuilder` tests
-- [x] Add 9 PDF-specific `LocalReportExportService` tests
-- [x] Run validation
-
-**Files created:**
-- `assets/fonts/README.md`
-- `lib/features/reports/domain/monthly_report_data.dart`
-- `lib/features/reports/data/monthly_report_data_builder.dart`
-- `lib/features/reports/data/pdf_font_loader.dart`
-- `lib/features/reports/data/pdf_monthly_report_exporter.dart`
-- `lib/features/reports/data/report_formatters.dart`
-- `test/monthly_report_data_builder_test.dart`
-
-**Files modified:**
-- `pubspec.yaml` (+ `pdf: ^3.12.0`, `printing: ^5.14.3`, `assets/fonts/` entry)
-- `lib/features/reports/data/local_report_export_service.dart` (real PDF leg)
-- `lib/features/reports/data/report_export_service_provider.dart` (PDF deps injected)
-- `lib/features/reports/data/report_file_writer_native.dart` (removed CSV-only type group)
-- `lib/features/reports/presentation/pages/reports_page.dart` (wired PDF button)
-- `test/local_report_export_service_test.dart` (+ 9 PDF-specific tests)
-
-**Notes:**
-- PDF generation code is complete and compiles clean (3 info-level deprecation warnings only).
-- `MonthlyPdfExporter` abstract interface enables fake implementations for testing.
-- `PdfFontLoader` loads Noto Sans from `assets/fonts/` via `rootBundle.load()`.
-- Font asset is the sole blocker — see `assets/fonts/README.md` for acquisition instructions.
-- PDF content: monthly title, 4-row overview table, category breakdown with percentages, transaction table with 5 columns, generated-at footer.
-- Empty month shows placeholder message; no-expense month shows placeholder; no divide-by-zero.
-- Native PDF export opens Save As dialog via `file_selector`.
-- Web returns unsupported message (browser download deferred to Phase 9D).
-- Backup remains out of scope.
-
-**Validation:**
-- [x] `flutter pub get` — PASS
-- [x] `dart format lib test` — PASS
-- [x] `flutter analyze` — PASS (3 info: `Table.fromTextArray` deprecation only)
-- [x] `flutter test` — PASS (133 tests)
-- [x] `flutter run -d chrome --web-run-headless --no-resident` — PASS
-- [x] `flutter build windows --release` — PASS (release exe built with font assets)
-- [ ] Manual Windows PDF Save As smoke — NOT RUN (user to verify)
-
-**Font Blocker Resolution (DONE):**
-- Downloaded Noto Sans v2.015 (OFL licensed) from notofonts/latin-greek-cyrillic GitHub releases.
-- `NotoSans-Regular.ttf` (431 KB) and `NotoSans-Bold.ttf` (432 KB) placed in `assets/fonts/`.
-- `assets/fonts/` registered in `pubspec.yaml`.
-- `flutter pub get` recognizes assets.
-- `flutter build windows --release` succeeded with font assets.
-- Release exe launches and exits cleanly.
-
-**Next step:**
-- Phase 9D — Export UX & Web Download (browser download for web CSV/PDF).
-
-#### Phase 9D — Export UX & Polish
-
-**Status:** `[x] DONE`
-**Goal:** Polish export experience: SnackBar feedback (done), web browser download, share on mobile.
-
-**Checklist:**
-- [x] Add success/error `SnackBar` UX after export (CSV and PDF wired in `ReportsPage`)
-- [x] Implement web download flow (browser download via `package:web` Blob API)
-- [x] Error path audit: no crash on empty transactions, user cancel, unsupported
-- [x] Native CSV/PDF Save As behavior unchanged
-- [x] `flutter analyze` and `flutter test` pass
-- [ ] Add optional share functionality on mobile (`printing` package share API) — **Deferred: requires Android toolchain**
-
-**Files created:**
-- `lib/features/reports/data/report_file_writer_web.dart` (new — `WebReportFileWriter` using `package:web` Blob API)
-
-**Files modified:**
-- `lib/features/reports/data/report_file_writer.dart` (3-branch conditional export: stub → native → web)
-- `lib/features/reports/data/report_file_writer_stub.dart` (removed redundant self-export, clarified doc)
-- `lib/features/reports/data/report_file_writer_native.dart` (removed redundant self-export)
-- `pubspec.yaml` (`+ web: ^1.1.1` transitive → direct dependency)
-- `README.md` (export section added)
-- `docs/PROJECT_PROGRESS_CHECKLIST.md` (Phase 9D marked DONE)
-
-**Notes:**
-- Web browser download implemented via `package:web` (`Blob` + `URL.createObjectURL` + hidden `HTMLAnchorElement` with `download` attribute). No `dart:html` — uses modern `package:web` with `dart:js_interop`.
-- 3-branch conditional export: `stub` (test VM) → `native` (`dart.library.io`) → `web` (`dart.library.js_interop`).
-- MIME types set per file extension: `.pdf` → `application/pdf`, `.csv` → `text/csv;charset=utf-8`.
-- `URL.revokeObjectURL` called in both success and catch paths to prevent memory leaks.
-- Export catch block returns `unsupported` — non-crash, clean UX.
-- SnackBar UX was already implemented in Phase 9C — no UI changes needed.
-- Mobile share (`Printing.sharePdf`) deferred — requires working Android toolchain (Phase 10).
-
-**Validation:**
-- [x] `flutter analyze` — PASS (3 info deprecations: `Table.fromTextArray` from pdf package only)
-- [x] `flutter test` — PASS (133 tests)
-- [x] `flutter run -d chrome --web-run-headless --no-resident` — PASS
-- [x] `flutter build windows --release` — PASS
-
-**Next step:**
-- Phase 10 — Android Toolchain + APK Build.
-
-### Phase 10 — Android Toolchain + APK Build
-
-**Status:** `[ ] NOT STARTED`
-**Goal:** Fix Android environment and produce APK.
-**Scope:** Android SDK tools, licenses, emulator/device run và APK build.
-**Files touched/expected:** Android SDK/toolchain setup ngoài repo, có thể kèm minimal Android project config nếu cần.
-
-**Checklist:**
-- [ ] Install Android SDK cmdline-tools
-- [ ] Accept Android licenses
-- [ ] `flutter doctor` Android toolchain green
-- [ ] Run app on Android emulator or physical device
-- [ ] Build debug APK
-- [ ] Build release APK if needed
-
-**Validation:**
-- [ ] `flutter doctor --android-licenses`
-- [ ] `flutter doctor`
-- [ ] `flutter run -d android`
-- [ ] `flutter build apk`
-
-**Notes:**
-- Phase này độc lập với web demo nhưng là prerequisite quan trọng cho persistence QA trên Android.
-- Phase 8C used Windows target successfully for native persistence QA.
-
-**Next step:**
-- Fix local Android toolchain once persistence rollout is scheduled.
-
-### Phase 11 — Final QA + Demo Script
-
-**Status:** `[ ] NOT STARTED`
-**Goal:** Prepare final demo and QA checklist.
-**Scope:** Manual test cases, demo script, UI/device verification, release readiness.
-**Files touched/expected:** `docs/` demo notes, QA checklist docs, maybe screenshots/gifs if needed.
-
-**Checklist:**
-- [ ] Write manual test cases
-- [ ] Write demo script
-- [ ] Verify add/edit/delete/filter/statistics/export
-- [ ] Verify empty states
-- [ ] Verify error states
-- [ ] Verify UI on small screen
-- [ ] Verify release build
-
-**Validation:**
-- [ ] full manual QA walkthrough
-- [ ] release smoke check
-
-**Notes:**
-- Nên làm sau Phase 7–10 ổn định.
-
-**Next step:**
-- Convert manual flows thành repeatable demo steps.
-
-### Phase 12 — Optional Cloud Sync/Auth
-
-**Status:** `[ ] NOT STARTED`
-**Goal:** Only consider after local app is stable.
-**Scope:** Backend decision, auth decision, sync strategy, conflict handling và cloud backup.
-**Files touched/expected:** TBD after product scope is confirmed.
-
-**Checklist:**
-- [ ] Decide backend
-- [ ] Decide auth
-- [ ] Sync local SQLite with server
-- [ ] Conflict strategy
-- [ ] Backup/restore cloud
-
-**Validation:**
-- [ ] architecture review
-- [ ] sync/auth integration QA
-
-**Notes:**
-- Do not start this before Phase 8–11 are stable.
-
-**Next step:**
-- Re-evaluate only when local-first MVP is complete.
+- Chrome/web uses `InMemoryTransactionRepository` by design, so transaction data resets on refresh/restart.
+- Chrome/web also keeps Pay Later in-memory by design; restart persistence is not the default behavior on the current target.
+- Native Drift repository paths exist, but they are not the default runtime path for the current web-first project snapshot.
+- Phase 9 remains under review until export closure evidence is treated as canonical; Windows Save As and cancel-path smoke are still the clearest remaining gap.
+- Pay Later-specific CSV/PDF export is still deferred.
 
 ## 4. Validation History
 
-| Date | Command | Result | Notes |
+| Date | Command / Check | Result | Notes |
 |---|---|---:|---|
-| 2026-05-02 | `flutter pub get` | PASS | Dependencies resolved successfully after Phase 6 |
-| 2026-05-02 | `flutter analyze` | PASS | Latest Phase 6 validation clean |
-| 2026-05-02 | `flutter test` | PASS | Widget tests updated for bottom navigation and add transaction flow |
-| 2026-05-02 | `flutter run -d chrome` | PASS | Previously validated during MVP setup/phases |
-| 2026-05-02 | `flutter run -d chrome --web-run-headless --no-resident` | PASS | Latest Chrome smoke run passed after Phase 6 |
-| 2026-05-02 | `dart run build_runner build --delete-conflicting-outputs` | PASS | Drift code generation passed in Phase 5; not rerun in Phase 6 because schema did not change |
-| 2026-05-02 | `flutter analyze` | PASS | Phase 7A: shared `TransactionForm`, `EditTransactionPage`, `updateTransaction` controller, edit route |
-| 2026-05-02 | `flutter test` | PASS | Phase 7A: edit navigation widget test added and passes |
-| 2026-05-02 | `flutter run -d chrome --web-run-headless --no-resident` | PASS | Phase 7A: Chrome smoke remained green after refactoring add page to use shared form |
-| 2026-05-02 | `flutter analyze` | PASS | Phase 7B: `transaction_filters.dart`, `transaction_filter_controller.dart`, filter/controller tests |
-| 2026-05-02 | `flutter test` | PASS | Phase 7B: 44 tests total (30 filter logic + 10 controller + 4 widget) |
-| 2026-05-02 | `flutter run -d chrome --web-run-headless --no-resident` | PASS | Phase 7B: Chrome smoke pass; dashboard, transactions, add, edit all intact |
-| 2026-05-02 | Code review (no validation run) | PASS | Checklist accuracy confirmed: Phase 7C/7D UI not wired; `TransactionsPage` does not use `transactionFilterControllerProvider`; `DashboardPage` and `StatisticsPage` show all-time totals; `ReportsPage` shows all coming soon |
-| 2026-05-02 | `flutter analyze` | PASS | Phase 7C: MonthSelector, TransactionFilterBar, FilteredTransactionsSummary, TransactionsPage wired filter |
-| 2026-05-02 | `flutter test` | PASS | Phase 7C: 49 tests total (44 original + 5 new Phase 7C widget tests) |
-| 2026-05-02 | `flutter run -d chrome --web-run-headless --no-resident` | PASS | Phase 7C: Chrome smoke pass after filter UI wiring |
-| 2026-05-02 | `flutter analyze` | PASS | Phase 7D: `filterTransactionsByMonth`, `MonthlyTransactionSummary`, monthly Dashboard/Statistics wiring |
-| 2026-05-02 | `flutter test` | PASS | Phase 7D: 55 tests total (49 original + 6 new Phase 7D widget tests) |
-| 2026-05-03 | `flutter analyze` | PASS | Phase 8A persistence readiness audit |
-| 2026-05-03 | `flutter test` | PASS | Phase 8A: 55 tests pass (44 filter/controller + 11 widget) |
-| 2026-05-03 | `flutter run -d chrome --web-run-headless --no-resident` | PASS | Phase 8A: Chrome smoke pass; web fallback remains safe |
-| 2026-05-03 | `flutter devices` | PASS | Phase 8A: Windows, Chrome, Edge available |
-| 2026-05-03 | `flutter doctor` | WARN | Phase 8A: Android toolchain incomplete (expected; Windows target recommended for 8C) |
-| 2026-05-03 | `flutter analyze` | PASS | Phase 8B: conditional imports, TransactionType hardening, widget test overrides |
-| 2026-05-03 | `flutter test` | PASS | Phase 8B: 66 tests total (30 filter + 10 controller + 11 transaction_type + 15 widget) |
-| 2026-05-03 | `flutter run -d chrome --web-run-headless --no-resident` | PASS | Phase 8B: web still uses InMemory; conditional imports prevent dart:ffi on web |
-| 2026-05-03 | `flutter run -d windows` | FAIL | Phase 8B: Windows Developer Mode/symlink not enabled; app code is correct |
-| **2026-05-03** | **`flutter analyze`** | **PASS** | **Current state: no issues found** |
-| **2026-05-03** | **`flutter test`** | **PASS** | **Current state: 66 tests passed** |
-| **2026-05-03** | **`flutter run -d chrome`** | **PASS** | **Current state: Chrome running, DevTools available** |
-| **2026-05-03** | **`flutter run -d windows`** | **PASS** | **Phase 8C: native Drift app launch after enabling Developer Mode** |
-| **2026-05-03** | **Manual persistence QA** | **PASS** | **Phase 8C: add/edit/delete transactions persisted after restart on Windows; dashboard/statistics/filter-search all correct** |
-| **2026-05-03** | **`flutter analyze`** | **PASS** | **Phase 8C regression: no issues found** |
-| **2026-05-03** | **`flutter test`** | **PASS** | **Phase 8C regression: 66 tests passed** |
-| **2026-05-03** | **`flutter run -d chrome --web-run-headless --no-resident`** | **PASS** | **Phase 8C: web fallback remains safe** |
-| **2026-05-03** | **`flutter analyze`** | **PASS** | **Phase 8D: no issues found (hardening audit)** |
-| **2026-05-03** | **`flutter test`** | **PASS** | **Phase 8D: 66 tests passed (no regressions)** |
-| **2026-05-03** | **`flutter run -d chrome --web-run-headless --no-resident`** | **PASS** | **Phase 8D: web fallback safe** |
-| **2026-05-03** | **Docs created** | **PASS** | **Phase 8D: `PHASE_8D_PERSISTENCE_HARDENING.md` + `README.md` updated** |
-| **2026-05-04** | **`flutter analyze`** | **PASS** | **Phase 9A: no issues found (5 new export contract files)** |
-| **2026-05-04** | **`flutter test`** | **PASS** | **Phase 9A: 66 tests passed (no regressions)** |
-| **2026-05-04** | **Docs created** | **PASS** | **Phase 9A: export contracts + architecture doc + checklist updated** |
-| **2026-05-04** | **`flutter analyze`** | **PASS** | **Phase 9B: 0 issues (CsvTransactionExporter, file writer, service, ReportsPage wired)** |
-| **2026-05-04** | **`flutter test`** | **PASS** | **Phase 9B: 103 tests pass (66 original + 37 new: csv exporter + file namer + service)** |
-| **2026-05-04** | **`flutter run -d chrome --web-run-headless --no-resident`** | **PASS** | **Phase 9B: web fallback safe — CSV export returns null path message on web** |
-| **2026-05-04** | **`flutter run -d windows`** | **NOT RUN** | **Phase 9B: native CSV save not manually smoke-tested in Cursor environment** |
-| **2026-05-04** | **`flutter analyze`** | **PASS** | **Current state re-validation: no issues found** |
-| **2026-05-04** | **`flutter test`** | **PASS** | **Current state re-validation: 103 tests pass (no regressions)** |
-| **2026-05-04** | **`flutter analyze`** | **PASS** | **Phase 9B CSV Save As dialog fix: 0 issues (`file_selector` added, `ReportFileWriteResult` introduced)** |
-| **2026-05-04** | **`flutter test`** | **PASS** | **Phase 9B: 115 tests pass (6 new write result + 6 updated service tests)** |
-| **2026-05-04** | **`flutter run -d chrome --web-run-headless --no-resident`** | **PASS** | **Phase 9B: web fallback safe — stub returns `unsupported`** |
-| **2026-05-05** | **`flutter analyze`** | **PASS** | **Phase 9C: 0 errors (3 info deprecations only: `Table.fromTextArray` → use `TableHelper.fromTextArray()`)** |
-| **2026-05-05** | **`flutter test`** | **PASS** | **Phase 9C: 133 tests pass (123 original + 10 new builder tests)** |
-| **2026-05-05** | **`flutter run -d chrome --web-run-headless --no-resident`** | **PASS** | **Phase 9C: web fallback safe; stub writer returns `unsupported` message** |
-| **2026-05-05** | **`flutter build windows --release`** | **PASS** | **Phase 9C: release exe built with Noto Sans font assets; launches and exits cleanly** |
-| **2026-05-05** | **`flutter analyze`** | **PASS** | **Current state re-validation: 3 info deprecations only, no errors** |
-| **2026-05-05** | **`flutter test`** | **PASS** | **Current state re-validation: 133 tests passed** |
-| **2026-05-05** | **`flutter analyze`** | **PASS** | **Phase 9D: `package:web` Blob API web writer, 3-branch conditional export, 0 errors** |
-| **2026-05-05** | **`flutter test`** | **PASS** | **Phase 9D: 133 tests pass (no regressions from web writer or export chain)** |
-| **2026-05-05** | **`flutter run -d chrome --web-run-headless --no-resident`** | **PASS** | **Phase 9D: web browser download implemented; Chrome headless smoke pass** |
-| **2026-05-05** | **`flutter build windows --release`** | **PASS** | **Phase 9D: native Windows release build pass after `package:web` addition; web code excluded via conditional import** |
+| 2026-05-06 | `git status` | PASS | Dirty worktree detected before checklist sync; no unrelated files were reverted |
+| 2026-05-06 | `flutter analyze` | PASS | No issues found |
+| 2026-05-06 | `flutter test` | PASS | 165 tests passed |
+| 2026-05-06 | `flutter run -d chrome --web-run-headless --no-resident` | PASS | Chrome/web app launches with the current default in-memory repository |
+| 2026-05-06 | `flutter build windows --release` | PASS | `build\windows\x64\runner\Release\expense_app.exe` built successfully |
+| 2026-05-06 | Windows release exe launch smoke | PASS | Release exe launched and stayed running until manually terminated |
+| 2026-05-07 | `git status` | PASS | Dirty worktree detected before Phase 10B work; unrelated files were preserved |
+| 2026-05-07 | `flutter doctor -v` | PASS | Android toolchain and licenses are green in this environment |
+| 2026-05-07 | `flutter analyze` | PASS | No issues found after Pay Later persistence/export hardening |
+| 2026-05-07 | `flutter test` | PASS | 174 tests passed |
+| 2026-05-07 | `flutter run -d chrome --web-run-headless --no-resident` | PASS | Web build remains safe with in-memory fallback repositories |
+| 2026-05-07 | `flutter build windows --release` | PASS | Windows release build still succeeds after schema/export changes |
+| 2026-05-07 | `flutter build apk --debug` | PASS | Debug APK built successfully |
+| 2026-05-07 | `flutter build apk --release` | PASS | Release APK built successfully; build emitted non-blocking Kotlin daemon shutdown warnings after artifact creation |
+| 2026-05-07 | `flutter devices` | PASS | Emulator `emulator-5554` detected |
+| 2026-05-07 | `flutter run -d emulator-5554 --no-resident` | PASS | App launched on Android emulator for manual QA |
+| 2026-05-07 | Android Pay Later restart persistence smoke | PASS | Installment plan, invoice, payment history, and zeroed summary survived force-stop + relaunch |
+| 2026-05-07 | Android report export smoke | PASS | CSV and PDF were created under `app_flutter/reports/` inside the app documents directory |
+| 2026-05-06 | Native Windows export Save As smoke | NOT RUN | Manual GUI verification for CSV/PDF Save As and cancel flow is still pending |
 
-## 5. Current Risks / Technical Notes
+## 5. Next Actions
 
-- Android toolchain chưa hoàn chỉnh: thiếu cmdline-tools/licenses. Chưa chạy trên Android (Phase 10). Persistence trên Android chưa verified.
-- Native CSV Save As: đã implement (Phase 9B ✅).
-- Native PDF Save As: đã implement (Phase 9C ✅).
-- Web CSV/PDF download: đã implement via `package:web` Blob API (Phase 9D ✅).
-- Mobile share (`Printing.sharePdf`): deferred — requires Android toolchain (Phase 10).
-- `flutter run -d windows` debug build LNK1168: Windows Defender locks debug exe during linking. Use `flutter build windows --release` for native smoke.
-- Dashboard và Statistics dùng monthly view.
-- 15 widget tests override `transactionRepositoryProvider` với `InMemoryTransactionRepository` để chạy trên web và tránh native DB.
-- Web persistence là InMemory theo thiết kế — không phải bug.
-- Cloud sync chưa implement (Phase 12, future).
-
-## 6. Next Actions
-
-### Immediate Next Step
-
-- Phase 10 — Android Toolchain + APK Build (fix Android SDK/cmdline-tools/licenses, then smoke PDF/Save As on Android device/emulator).
-- Alternatively: Phase 11 — Final QA + Demo Script (manual full-walkthrough of all features, write demo script).
-
-### Last Commits
-
-- `e890523` — `feat(reports): implement web browser download for CSV and PDF (Phase 9D)` — 2026-05-05
-- `2eefbe8` — `docs(progress): sync checklist with current repo state (Phase 9D IN PROGRESS, 133 tests)` — 2026-05-05
-- `585df8a` — `feat(reports): add Noto Sans font assets for PDF Vietnamese rendering` — 2026-05-05
-- `0b05e20` — `feat(reports): implement monthly PDF export scaffold (Phase 9C)` — 2026-05-05
+1. If Phase 8 needs promotion beyond review, rerun a native restart-persistence smoke and record it separately from the current web target.
+2. If Phase 9 needs closure, run manual export smoke for CSV/PDF plus one cancel path and keep the evidence in a dedicated validation artifact.
+3. Keep web persistence out of scope unless a separate audited phase explicitly approves browser storage.

@@ -1,4 +1,8 @@
+import 'package:expense_app/core/localization/app_string_key.dart';
+import 'package:expense_app/core/localization/app_strings.dart';
+import 'package:expense_app/core/localization/app_strings_context.dart';
 import 'package:expense_app/features/reports/data/report_export_service_provider.dart';
+import 'package:expense_app/features/reports/domain/report_export_format.dart';
 import 'package:expense_app/features/reports/domain/report_export_request.dart';
 import 'package:expense_app/features/reports/presentation/widgets/report_action_card.dart';
 import 'package:expense_app/features/transactions/presentation/controllers/transaction_controller.dart';
@@ -19,10 +23,37 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
   bool _isExportingCsv = false;
   bool _isExportingPdf = false;
 
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text(message)));
+  void _showSnackBar(ScaffoldMessengerState messenger, String message) {
+    messenger.showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  String _messageForExportResult(
+    AppStrings strings,
+    ReportExportFormat format,
+    String rawMessage,
+    String? filePath,
+  ) {
+    if (filePath != null) {
+      return format == ReportExportFormat.csv
+          ? strings.t(AppStringKey.csvExported)
+          : strings.t(AppStringKey.pdfExported);
+    }
+
+    if (rawMessage.contains('Đã hủy') || rawMessage.contains('cancel')) {
+      return format == ReportExportFormat.csv
+          ? strings.t(AppStringKey.csvExportCancelled)
+          : strings.t(AppStringKey.pdfExportCancelled);
+    }
+
+    if (rawMessage.contains('chưa hỗ trợ') || rawMessage.contains('support')) {
+      return format == ReportExportFormat.csv
+          ? strings.t(AppStringKey.csvExportUnsupported)
+          : strings.t(AppStringKey.pdfExportUnsupported);
+    }
+
+    return format == ReportExportFormat.csv
+        ? strings.t(AppStringKey.couldNotExportCsv)
+        : strings.t(AppStringKey.couldNotExportPdf);
   }
 
   Future<void> _onExportCsv() async {
@@ -31,11 +62,16 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
     final AsyncValue<TransactionState> state = ref.read(
       transactionControllerProvider,
     );
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final AppStrings strings = context.strings;
 
     await state.when(
       data: (TransactionState data) async {
         if (data.isEmpty) {
-          _showSnackBar('Không có giao dịch để xuất.');
+          _showSnackBar(
+            messenger,
+            strings.t(AppStringKey.noTransactionsToExport),
+          );
           return;
         }
 
@@ -53,9 +89,25 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
 
           final service = ref.read(reportExportServiceProvider);
           final result = await service.exportTransactionsCsv(request);
-          _showSnackBar(result.message);
+          if (!mounted) {
+            return;
+          }
+
+          _showSnackBar(
+            messenger,
+            _messageForExportResult(
+              strings,
+              result.format,
+              result.message,
+              result.filePath,
+            ),
+          );
         } catch (e) {
-          _showSnackBar('Không thể xuất CSV. Vui lòng thử lại.');
+          if (!mounted) {
+            return;
+          }
+
+          _showSnackBar(messenger, strings.t(AppStringKey.couldNotExportCsv));
         } finally {
           if (mounted) {
             setState(() => _isExportingCsv = false);
@@ -63,10 +115,16 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
         }
       },
       loading: () {
-        _showSnackBar('Dữ liệu giao dịch đang tải, thử lại sau.');
+        _showSnackBar(
+          messenger,
+          strings.t(AppStringKey.transactionsLoadingTryAgain),
+        );
       },
       error: (Object error, StackTrace stack) {
-        _showSnackBar('Không thể đọc dữ liệu giao dịch.');
+        _showSnackBar(
+          messenger,
+          strings.t(AppStringKey.couldNotReadTransactions),
+        );
       },
     );
   }
@@ -77,6 +135,8 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
     final AsyncValue<TransactionState> state = ref.read(
       transactionControllerProvider,
     );
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    final AppStrings strings = context.strings;
 
     await state.when(
       data: (TransactionState data) async {
@@ -94,9 +154,25 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
 
           final service = ref.read(reportExportServiceProvider);
           final result = await service.exportMonthlyPdf(request);
-          _showSnackBar(result.message);
+          if (!mounted) {
+            return;
+          }
+
+          _showSnackBar(
+            messenger,
+            _messageForExportResult(
+              strings,
+              result.format,
+              result.message,
+              result.filePath,
+            ),
+          );
         } catch (e) {
-          _showSnackBar('Không thể xuất PDF. Vui lòng thử lại.');
+          if (!mounted) {
+            return;
+          }
+
+          _showSnackBar(messenger, strings.t(AppStringKey.couldNotExportPdf));
         } finally {
           if (mounted) {
             setState(() => _isExportingPdf = false);
@@ -104,52 +180,68 @@ class _ReportsPageState extends ConsumerState<ReportsPage> {
         }
       },
       loading: () {
-        _showSnackBar('Dữ liệu giao dịch đang tải, thử lại sau.');
+        _showSnackBar(
+          messenger,
+          strings.t(AppStringKey.transactionsLoadingTryAgain),
+        );
       },
       error: (Object error, StackTrace stack) {
-        _showSnackBar('Không thể đọc dữ liệu giao dịch.');
+        _showSnackBar(
+          messenger,
+          strings.t(AppStringKey.couldNotReadTransactions),
+        );
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+
     return AppScaffold(
-      title: 'Báo cáo',
+      title: context.strings.t(AppStringKey.reportsTitle),
       bottomNavigationBar: const AppBottomNavigation(),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Xuất và sao lưu dữ liệu chi tiêu cá nhân',
-            style: TextStyle(color: Color(0xFF64748B), height: 1.45),
+          Text(
+            context.strings.t(AppStringKey.reportsSubtitle),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+              height: 1.45,
+            ),
           ),
           const SizedBox(height: 20),
           ReportActionCard(
             icon: Icons.table_chart_rounded,
-            title: 'Xuất CSV',
-            description: 'Tải danh sách giao dịch dạng bảng để xử lý tiếp.',
-            buttonLabel: _isExportingCsv ? 'Đang xuất...' : 'Xuất CSV',
+            title: context.strings.t(AppStringKey.exportCsv),
+            description: context.strings.t(AppStringKey.exportCsvDescription),
+            buttonLabel: _isExportingCsv
+                ? context.strings.t(AppStringKey.exportingCsv)
+                : context.strings.t(AppStringKey.exportCsv),
             onPressed: _isExportingCsv ? () {} : _onExportCsv,
           ),
           const SizedBox(height: 16),
           ReportActionCard(
             icon: Icons.picture_as_pdf_rounded,
-            title: 'Xuất PDF',
-            description:
-                'Tạo báo cáo thu chi theo tháng để chia sẻ hoặc lưu trữ.',
-            buttonLabel: _isExportingPdf ? 'Đang xuất...' : 'Xuất PDF',
+            title: context.strings.t(AppStringKey.exportPdf),
+            description: context.strings.t(AppStringKey.exportPdfDescription),
+            buttonLabel: _isExportingPdf
+                ? context.strings.t(AppStringKey.exportingPdf)
+                : context.strings.t(AppStringKey.exportPdf),
             onPressed: _isExportingPdf ? () {} : _onExportPdf,
           ),
           const SizedBox(height: 16),
           ReportActionCard(
             icon: Icons.backup_table_rounded,
-            title: 'Sao lưu dữ liệu',
-            description:
-                'Chuẩn bị cho SQLite/Drift persistence ở các phase sau.',
-            buttonLabel: 'Xem lộ trình',
-            onPressed: () =>
-                _showSnackBar('Sao lưu dữ liệu đang được phát triển'),
+            title: context.strings.t(AppStringKey.backup),
+            description: context.strings.t(AppStringKey.backupDescription),
+            buttonLabel: context.strings.t(AppStringKey.viewRoadmap),
+            onPressed: () => _showSnackBar(
+              ScaffoldMessenger.of(context),
+              context.strings.t(AppStringKey.backupComingSoon),
+            ),
           ),
         ],
       ),

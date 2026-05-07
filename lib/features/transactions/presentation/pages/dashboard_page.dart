@@ -1,6 +1,8 @@
-import 'package:expense_app/core/constants/app_constants.dart';
+import 'package:expense_app/core/localization/app_string_key.dart';
+import 'package:expense_app/core/localization/app_strings_context.dart';
 import 'package:expense_app/core/utils/currency_formatter.dart';
 import 'package:expense_app/features/transactions/domain/monthly_transaction_summary.dart';
+import 'package:expense_app/features/pay_later/presentation/widgets/pay_later_dashboard_entry_card.dart';
 import 'package:expense_app/features/transactions/domain/transaction_filters.dart';
 import 'package:expense_app/features/transactions/domain/transaction_model.dart';
 import 'package:expense_app/features/transactions/presentation/controllers/transaction_controller.dart';
@@ -20,24 +22,6 @@ import 'package:go_router/go_router.dart';
 class DashboardPage extends ConsumerWidget {
   const DashboardPage({super.key});
 
-  static const List<String> _months = [
-    'Tháng 1',
-    'Tháng 2',
-    'Tháng 3',
-    'Tháng 4',
-    'Tháng 5',
-    'Tháng 6',
-    'Tháng 7',
-    'Tháng 8',
-    'Tháng 9',
-    'Tháng 10',
-    'Tháng 11',
-    'Tháng 12',
-  ];
-
-  String _monthLabel(DateTime month) =>
-      '${_months[month.month - 1]} ${month.year}';
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final AsyncValue<TransactionState> transactionState = ref.watch(
@@ -49,15 +33,17 @@ class DashboardPage extends ConsumerWidget {
     final TransactionFilterController filterCtrl = ref.read(
       transactionFilterControllerProvider.notifier,
     );
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
 
     return AppScaffold(
-      title: AppConstants.dashboardTitle,
+      title: context.strings.t(AppStringKey.dashboardTitle),
       bottomNavigationBar: const AppBottomNavigation(),
       floatingActionButton: FloatingActionButton.extended(
         key: const Key('dashboard_add_transaction_fab'),
         onPressed: () => context.push('/transactions/new'),
         icon: const Icon(Icons.add),
-        label: const Text('Thêm giao dịch'),
+        label: Text(context.strings.t(AppStringKey.addTransaction)),
       ),
       child: transactionState.when(
         loading: () =>
@@ -65,7 +51,7 @@ class DashboardPage extends ConsumerWidget {
         error: (Object error, StackTrace stackTrace) {
           return _DashboardFeedbackState(
             child: Text(
-              'Không thể tải giao dịch.\n$error',
+              '${context.strings.t(AppStringKey.couldNotLoadTransactions)}\n$error',
               textAlign: TextAlign.center,
               style: const TextStyle(height: 1.5),
             ),
@@ -84,10 +70,10 @@ class DashboardPage extends ConsumerWidget {
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'Theo dõi thu chi cá nhân của bạn',
-                style: TextStyle(
-                  color: Color(0xFF64748B),
+              Text(
+                context.strings.t(AppStringKey.dashboardSubtitle),
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
                   fontSize: 15,
                   fontWeight: FontWeight.w500,
                 ),
@@ -105,27 +91,29 @@ class DashboardPage extends ConsumerWidget {
               ),
               const SizedBox(height: 12),
               Text(
-                _monthLabel(filter.selectedMonth),
+                context.strings.monthYear(filter.selectedMonth),
                 key: const Key('dashboard_month_label'),
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: theme.textTheme.bodySmall?.copyWith(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF64748B),
+                  color: colorScheme.onSurfaceVariant,
                 ),
               ),
               const SizedBox(height: 16),
               BalanceCard(
+                title: context.strings.t(AppStringKey.currentBalance),
                 balance: formatCurrency(summary.balance, withSign: false),
-                updatedLabel:
-                    'Đang theo dõi ${summary.totalTransactions} giao dịch',
+                updatedLabel: context.strings.trackingTransactions(
+                  summary.totalTransactions,
+                ),
               ),
               const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
                     child: SummaryCard(
-                      title: 'Thu nhập',
+                      title: context.strings.t(AppStringKey.totalIncome),
                       amount: formatCurrency(
                         summary.totalIncome,
                         withSign: false,
@@ -138,7 +126,7 @@ class DashboardPage extends ConsumerWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: SummaryCard(
-                      title: 'Chi tiêu',
+                      title: context.strings.t(AppStringKey.totalExpense),
                       amount: formatCurrency(
                         summary.totalExpense,
                         withSign: false,
@@ -150,20 +138,25 @@ class DashboardPage extends ConsumerWidget {
                   ),
                 ],
               ),
+              const SizedBox(height: 20),
+              const PayLaterDashboardEntryCard(),
               const SizedBox(height: 24),
               SectionHeader(
-                title: 'Giao dịch tháng này',
-                actionLabel: 'Xem tất cả',
+                title: context.strings.t(AppStringKey.recentTransactions),
+                actionLabel: context.strings.t(AppStringKey.viewAll),
                 onActionPressed: () => context.go('/transactions'),
               ),
               const SizedBox(height: 8),
               if (summary.transactions.isEmpty)
                 EmptyState(
-                  title: 'Chưa có giao dịch tháng này',
-                  message:
-                      'Thêm giao dịch mới hoặc chuyển sang tháng khác để xem dữ liệu.',
+                  title: context.strings.t(
+                    AppStringKey.noTransactionsThisMonth,
+                  ),
+                  message: context.strings.t(
+                    AppStringKey.noTransactionsThisMonthMessage,
+                  ),
                   icon: Icons.wallet_outlined,
-                  actionLabel: 'Thêm giao dịch',
+                  actionLabel: context.strings.t(AppStringKey.addTransaction),
                   onActionPressed: () => context.push('/transactions/new'),
                 )
               else

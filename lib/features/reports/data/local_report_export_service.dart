@@ -14,9 +14,10 @@ import 'report_export_service.dart';
 
 /// Concrete implementation of [ReportExportService] for native platforms.
 ///
-/// The CSV leg opens a Save As dialog so the user picks the destination. The
-/// PDF leg builds a monthly report and opens a Save As dialog too. This class
-/// lives in the [data] layer and has no `BuildContext` or Flutter UI dependencies.
+/// The CSV/PDF legs delegate file delivery to a platform-aware writer:
+/// desktop opens Save As, Android saves into app documents, and web downloads
+/// in-browser. This class lives in the [data] layer and has no `BuildContext`
+/// or Flutter UI dependencies.
 class LocalReportExportService implements ReportExportService {
   const LocalReportExportService({
     required CsvTransactionExporter csvExporter,

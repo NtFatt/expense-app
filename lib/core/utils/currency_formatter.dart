@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 
 final NumberFormat _currencyNumberFormat = NumberFormat.decimalPattern('vi_VN');
 
-String formatCurrency(int amount, {bool withSign = true}) {
+String formatCurrency(num amount, {bool withSign = true}) {
   final String prefix;
   if (!withSign) {
     prefix = '';

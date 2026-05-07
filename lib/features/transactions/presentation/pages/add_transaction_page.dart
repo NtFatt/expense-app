@@ -1,3 +1,5 @@
+import 'package:expense_app/core/localization/app_string_key.dart';
+import 'package:expense_app/core/localization/app_strings_context.dart';
 import 'package:expense_app/features/transactions/domain/transaction_model.dart';
 import 'package:expense_app/features/transactions/presentation/controllers/transaction_controller.dart';
 import 'package:expense_app/features/transactions/presentation/widgets/transaction_form.dart';
@@ -53,11 +55,17 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
 
       context.pop();
       messenger.showSnackBar(
-        const SnackBar(content: Text('Đã thêm giao dịch')),
+        SnackBar(
+          content: Text(context.strings.t(AppStringKey.transactionAdded)),
+        ),
       );
     } catch (error) {
       messenger.showSnackBar(
-        SnackBar(content: Text('Không thể thêm giao dịch: $error')),
+        SnackBar(
+          content: Text(
+            '${context.strings.t(AppStringKey.couldNotAddTransaction)} $error',
+          ),
+        ),
       );
     } finally {
       if (mounted) {
@@ -71,12 +79,13 @@ class _AddTransactionPageState extends ConsumerState<AddTransactionPage> {
   @override
   Widget build(BuildContext context) {
     return AppScaffold(
-      title: 'Thêm giao dịch',
+      title: context.strings.t(AppStringKey.addTransaction),
       contentMaxWidth: 680,
       child: TransactionForm(
-        description:
-            'Ghi lại một khoản thu hoặc chi để cập nhật số dư của bạn.',
-        submitButtonLabel: 'Lưu giao dịch',
+        description: context.strings.t(AppStringKey.addTransactionDescription),
+        submitButtonLabel: context.strings.t(
+          AppStringKey.saveTransactionButton,
+        ),
         isSubmitting: _isSubmitting,
         amountFieldKey: const Key('add_transaction_amount_field'),
         submitButtonKey: const Key('add_transaction_submit_button'),

@@ -10,8 +10,10 @@ abstract interface class ReportFileWriter {
   /// [ReportFileWriteResult] that precisely distinguishes saved, cancelled,
   /// and unsupported outcomes.
   ///
-  /// - On native (Windows/macOS/Linux/Android): opens a Save As dialog via
+  /// - On desktop native (Windows/macOS/Linux): opens a Save As dialog via
   ///   `file_selector` so the user picks the destination path.
+  /// - On Android: writes to the app documents directory because Save As is
+  ///   not supported by the current `file_selector` package there.
   /// - On web (Chrome/Firefox/Safari): triggers a browser download using a
   ///   Blob URL so the browser saves the file.
   /// - In other environments (e.g. test VM): returns `unsupported`.

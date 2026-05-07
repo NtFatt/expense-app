@@ -1,3 +1,5 @@
+import 'package:expense_app/core/localization/app_string_key.dart';
+import 'package:expense_app/core/localization/app_strings_context.dart';
 import 'package:expense_app/features/transactions/domain/transaction_filters.dart';
 import 'package:expense_app/features/transactions/domain/transaction_model.dart';
 import 'package:expense_app/features/transactions/presentation/controllers/transaction_controller.dart';
@@ -44,10 +46,18 @@ class TransactionsPage extends ConsumerWidget {
         return;
       }
 
-      messenger.showSnackBar(const SnackBar(content: Text('Đã xóa giao dịch')));
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(context.strings.t(AppStringKey.transactionDeleted)),
+        ),
+      );
     } catch (error) {
       messenger.showSnackBar(
-        SnackBar(content: Text('Không thể xóa giao dịch: $error')),
+        SnackBar(
+          content: Text(
+            '${context.strings.t(AppStringKey.couldNotDeleteTransaction)} $error',
+          ),
+        ),
       );
     }
   }
@@ -65,13 +75,13 @@ class TransactionsPage extends ConsumerWidget {
     );
 
     return AppScaffold(
-      title: 'Giao dịch',
+      title: context.strings.t(AppStringKey.transactionsTitle),
       bottomNavigationBar: const AppBottomNavigation(),
       floatingActionButton: FloatingActionButton.extended(
         key: const Key('transactions_add_transaction_fab'),
         onPressed: () => context.push('/transactions/new'),
         icon: const Icon(Icons.add),
-        label: const Text('Thêm giao dịch'),
+        label: Text(context.strings.t(AppStringKey.addTransaction)),
       ),
       child: transactionState.when(
         loading: () => const SizedBox(
@@ -83,7 +93,7 @@ class TransactionsPage extends ConsumerWidget {
             height: 320,
             child: Center(
               child: Text(
-                'Không thể tải danh sách giao dịch.\n$error',
+                '${context.strings.t(AppStringKey.couldNotLoadTransactions)}\n$error',
                 textAlign: TextAlign.center,
                 style: const TextStyle(height: 1.5),
               ),
@@ -113,8 +123,10 @@ class TransactionsPage extends ConsumerWidget {
               FilteredTransactionsSummary(transactions: filteredTransactions),
               const SizedBox(height: 20),
               SectionHeader(
-                title: 'Danh sách giao dịch',
-                actionLabel: data.isEmpty ? null : 'Thêm mới',
+                title: context.strings.t(AppStringKey.transactionsTitle),
+                actionLabel: data.isEmpty
+                    ? null
+                    : context.strings.t(AppStringKey.addNew),
                 onActionPressed: data.isEmpty
                     ? null
                     : () => context.push('/transactions/new'),
@@ -122,20 +134,22 @@ class TransactionsPage extends ConsumerWidget {
               const SizedBox(height: 8),
               if (data.isEmpty)
                 EmptyState(
-                  title: 'Chưa có giao dịch',
-                  message:
-                      'Hãy thêm giao dịch đầu tiên để bắt đầu theo dõi chi tiêu.',
+                  title: context.strings.t(AppStringKey.noTransactions),
+                  message: context.strings.t(
+                    AppStringKey.noTransactionsMessage,
+                  ),
                   icon: Icons.receipt_long_rounded,
-                  actionLabel: 'Thêm giao dịch',
+                  actionLabel: context.strings.t(AppStringKey.addTransaction),
                   onActionPressed: () => context.push('/transactions/new'),
                 )
               else if (filteredTransactions.isEmpty)
                 EmptyState(
-                  title: 'Không tìm thấy giao dịch phù hợp',
-                  message:
-                      'Thử đổi tháng, loại giao dịch hoặc từ khóa tìm kiếm.',
+                  title: context.strings.t(AppStringKey.noMatchingTransactions),
+                  message: context.strings.t(
+                    AppStringKey.noMatchingTransactionsMessage,
+                  ),
                   icon: Icons.search_off_rounded,
-                  actionLabel: 'Xóa bộ lọc',
+                  actionLabel: context.strings.t(AppStringKey.clearFilters),
                   onActionPressed: filterCtrl.clearNonMonthFilters,
                 )
               else
@@ -147,7 +161,9 @@ class TransactionsPage extends ConsumerWidget {
                       children: <Widget>[
                         IconButton(
                           key: Key('edit_transaction_button_${transaction.id}'),
-                          tooltip: 'Sửa giao dịch',
+                          tooltip: context.strings.t(
+                            AppStringKey.editTransaction,
+                          ),
                           onPressed: () => context.push(
                             '/transactions/${transaction.id}/edit',
                           ),
@@ -157,7 +173,7 @@ class TransactionsPage extends ConsumerWidget {
                           ),
                         ),
                         IconButton(
-                          tooltip: 'Xóa giao dịch',
+                          tooltip: context.strings.t(AppStringKey.delete),
                           onPressed: () =>
                               _deleteTransaction(context, ref, transaction),
                           icon: const Icon(

@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 class BalanceCard extends StatelessWidget {
   const BalanceCard({
     super.key,
+    required this.title,
     required this.balance,
     required this.updatedLabel,
   });
 
+  final String title;
   final String balance;
   final String updatedLabel;
 
@@ -31,8 +33,8 @@ class BalanceCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Số dư hiện tại',
+          Text(
+            title,
             style: TextStyle(
               color: Colors.white70,
               fontSize: 15,

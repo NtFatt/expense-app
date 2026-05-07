@@ -1,3 +1,5 @@
+import 'package:expense_app/core/localization/app_string_key.dart';
+import 'package:expense_app/core/localization/app_strings_context.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -29,7 +31,7 @@ class AppBottomNavigation extends StatelessWidget {
           key: Key(destination.keyValue),
           icon: Icon(destination.icon),
           selectedIcon: Icon(destination.selectedIcon),
-          label: destination.label,
+          label: destination.label(context),
         );
       }).toList(),
     );
@@ -39,43 +41,43 @@ class AppBottomNavigation extends StatelessWidget {
 enum _AppBottomDestination {
   dashboard(
     routePath: '/',
-    label: 'Tổng quan',
     icon: Icons.dashboard_outlined,
     selectedIcon: Icons.dashboard_rounded,
     keyValue: 'bottom_nav_dashboard',
   ),
   transactions(
     routePath: '/transactions',
-    label: 'Giao dịch',
     icon: Icons.receipt_long_outlined,
     selectedIcon: Icons.receipt_long_rounded,
     keyValue: 'bottom_nav_transactions',
   ),
   statistics(
     routePath: '/statistics',
-    label: 'Thống kê',
     icon: Icons.pie_chart_outline_rounded,
     selectedIcon: Icons.pie_chart_rounded,
     keyValue: 'bottom_nav_statistics',
   ),
   reports(
     routePath: '/reports',
-    label: 'Báo cáo',
     icon: Icons.description_outlined,
     selectedIcon: Icons.description_rounded,
     keyValue: 'bottom_nav_reports',
+  ),
+  settings(
+    routePath: '/settings',
+    icon: Icons.settings_outlined,
+    selectedIcon: Icons.settings_rounded,
+    keyValue: 'bottom_nav_settings',
   );
 
   const _AppBottomDestination({
     required this.routePath,
-    required this.label,
     required this.icon,
     required this.selectedIcon,
     required this.keyValue,
   });
 
   final String routePath;
-  final String label;
   final IconData icon;
   final IconData selectedIcon;
   final String keyValue;
@@ -85,6 +87,26 @@ enum _AppBottomDestination {
       return location == routePath;
     }
 
-    return location == routePath;
+    return location == routePath || location.startsWith('$routePath/');
+  }
+
+  String label(BuildContext context) {
+    return switch (this) {
+      _AppBottomDestination.dashboard => context.strings.t(
+        AppStringKey.navDashboard,
+      ),
+      _AppBottomDestination.transactions => context.strings.t(
+        AppStringKey.navTransactions,
+      ),
+      _AppBottomDestination.statistics => context.strings.t(
+        AppStringKey.navStatistics,
+      ),
+      _AppBottomDestination.reports => context.strings.t(
+        AppStringKey.navReports,
+      ),
+      _AppBottomDestination.settings => context.strings.t(
+        AppStringKey.navSettings,
+      ),
+    };
   }
 }

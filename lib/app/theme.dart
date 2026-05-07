@@ -4,23 +4,46 @@ class AppTheme {
   const AppTheme._();
 
   static ThemeData light() {
-    const seedColor = Color(0xFF2563EB);
-    const surfaceColor = Colors.white;
-    const backgroundColor = Color(0xFFF8FAFC);
-    final colorScheme = ColorScheme.fromSeed(
-      seedColor: seedColor,
+    return _buildTheme(
       brightness: Brightness.light,
+      scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+      surfaceColor: Colors.white,
+      outlineColor: const Color(0xFFE2E8F0),
     );
+  }
+
+  static ThemeData dark() {
+    return _buildTheme(
+      brightness: Brightness.dark,
+      scaffoldBackgroundColor: const Color(0xFF0F172A),
+      surfaceColor: const Color(0xFF111827),
+      outlineColor: const Color(0xFF334155),
+    );
+  }
+
+  static ThemeData _buildTheme({
+    required Brightness brightness,
+    required Color scaffoldBackgroundColor,
+    required Color surfaceColor,
+    required Color outlineColor,
+  }) {
+    const seedColor = Color(0xFF2563EB);
+    final ColorScheme colorScheme = ColorScheme.fromSeed(
+      seedColor: seedColor,
+      brightness: brightness,
+    ).copyWith(surface: surfaceColor, outlineVariant: outlineColor);
 
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
-      scaffoldBackgroundColor: backgroundColor,
-      cardTheme: const CardThemeData(
+      scaffoldBackgroundColor: scaffoldBackgroundColor,
+      canvasColor: scaffoldBackgroundColor,
+      dividerColor: colorScheme.outlineVariant,
+      cardTheme: CardThemeData(
         color: surfaceColor,
         elevation: 0,
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
+        shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.circular(24)),
         ),
       ),
@@ -29,11 +52,11 @@ class AppTheme {
         fillColor: surfaceColor,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          borderSide: BorderSide(color: outlineColor),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          borderSide: BorderSide(color: outlineColor),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(18),
@@ -69,19 +92,25 @@ class AppTheme {
           return TextStyle(
             fontSize: 12,
             fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-            color: isSelected ? colorScheme.primary : const Color(0xFF64748B),
+            color: isSelected
+                ? colorScheme.primary
+                : colorScheme.onSurfaceVariant,
           );
         }),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        backgroundColor: colorScheme.inverseSurface,
+        contentTextStyle: TextStyle(color: colorScheme.onInverseSurface),
       ),
       dialogTheme: DialogThemeData(
+        backgroundColor: surfaceColor,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),
-      appBarTheme: const AppBarTheme(
-        backgroundColor: backgroundColor,
+      appBarTheme: AppBarTheme(
+        backgroundColor: scaffoldBackgroundColor,
+        foregroundColor: colorScheme.onSurface,
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,

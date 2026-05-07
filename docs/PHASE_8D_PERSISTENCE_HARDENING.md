@@ -1,5 +1,7 @@
 # Phase 8D — Persistence Hardening, Migration, Documentation
 
+> Historical native-persistence closeout from 2026-05-03. For the current canonical persistence policy and Phase 8 reconciliation, see `docs/PHASE_8_STATUS_RECONCILIATION.md` and `docs/PROJECT_PROGRESS_CHECKLIST.md`.
+
 **Date:** 2026-05-03
 **Auditor:** Senior Flutter Engineer (Phase 8D autonomous review)
 **Scope:** Final sub-phase to close Phase 8 — hardening, migration strategy, and documentation

@@ -1,4 +1,5 @@
-import 'package:expense_app/core/utils/date_formatter.dart';
+import 'package:expense_app/core/localization/app_string_key.dart';
+import 'package:expense_app/core/localization/app_strings_context.dart';
 import 'package:expense_app/features/categories/data/default_categories.dart';
 import 'package:expense_app/features/categories/domain/category_model.dart';
 import 'package:expense_app/features/transactions/domain/transaction_model.dart';
@@ -139,13 +140,16 @@ class _TransactionFormState extends State<TransactionForm> {
 
   @override
   Widget build(BuildContext context) {
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Form(
         key: _formKey,
@@ -154,7 +158,10 @@ class _TransactionFormState extends State<TransactionForm> {
           children: [
             Text(
               widget.description,
-              style: const TextStyle(color: Color(0xFF64748B), height: 1.45),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+                height: 1.45,
+              ),
             ),
             const SizedBox(height: 20),
             TransactionTypeSelector(
@@ -169,21 +176,21 @@ class _TransactionFormState extends State<TransactionForm> {
               inputFormatters: <TextInputFormatter>[
                 FilteringTextInputFormatter.digitsOnly,
               ],
-              decoration: const InputDecoration(
-                labelText: 'Số tiền',
-                hintText: 'Nhập số tiền giao dịch',
-                suffixText: 'VNĐ',
-                helperText: 'Chỉ nhập số dương, hệ thống tự phân loại thu/chi.',
+              decoration: InputDecoration(
+                labelText: context.strings.t(AppStringKey.amount),
+                hintText: context.strings.t(AppStringKey.amountHint),
+                suffixText: context.strings.t(AppStringKey.currencyCode),
+                helperText: context.strings.t(AppStringKey.amountHelper),
               ),
               validator: (String? value) {
                 final String normalizedValue = value?.trim() ?? '';
                 if (normalizedValue.isEmpty) {
-                  return 'Vui lòng nhập số tiền';
+                  return context.strings.t(AppStringKey.amountRequired);
                 }
 
                 final int? amount = int.tryParse(normalizedValue);
                 if (amount == null || amount <= 0) {
-                  return 'Số tiền phải lớn hơn 0';
+                  return context.strings.t(AppStringKey.amountGreaterThanZero);
                 }
 
                 return null;
@@ -192,7 +199,9 @@ class _TransactionFormState extends State<TransactionForm> {
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
               initialValue: _selectedCategory,
-              decoration: const InputDecoration(labelText: 'Danh mục'),
+              decoration: InputDecoration(
+                labelText: context.strings.t(AppStringKey.category),
+              ),
               items: _availableCategories
                   .map(
                     (CategoryModel category) => DropdownMenuItem<String>(
@@ -215,14 +224,14 @@ class _TransactionFormState extends State<TransactionForm> {
             TextFormField(
               controller: _noteController,
               maxLines: 3,
-              decoration: const InputDecoration(
-                labelText: 'Ghi chú',
-                hintText: 'Ví dụ: ăn sáng, mua sách, lương tháng này...',
+              decoration: InputDecoration(
+                labelText: context.strings.t(AppStringKey.note),
+                hintText: context.strings.t(AppStringKey.noteHint),
               ),
             ),
             const SizedBox(height: 16),
-            const Text(
-              'Ngày giao dịch',
+            Text(
+              context.strings.t(AppStringKey.transactionDate),
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 12),
@@ -236,9 +245,9 @@ class _TransactionFormState extends State<TransactionForm> {
                   vertical: 16,
                 ),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: colorScheme.surface,
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xFFE2E8F0)),
+                  border: Border.all(color: colorScheme.outlineVariant),
                 ),
                 child: Row(
                   children: [
@@ -246,7 +255,7 @@ class _TransactionFormState extends State<TransactionForm> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: Text(
-                        formatShortDate(_selectedDate),
+                        context.strings.shortDate(_selectedDate),
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,

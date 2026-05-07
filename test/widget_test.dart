@@ -6,8 +6,14 @@ import 'package:expense_app/features/transactions/presentation/pages/dashboard_p
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
+  setUp(() {
+    SharedPreferences.setMockInitialValues(<String, Object>{});
+    appRouter.go('/');
+  });
+
   testWidgets('Expense app renders dashboard', (WidgetTester tester) async {
     await tester.pumpWidget(
       ProviderScope(
@@ -21,10 +27,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('Quản lý chi tiêu'), findsOneWidget);
+    expect(find.text('Tổng quan'), findsWidgets);
     expect(find.text('Số dư hiện tại'), findsOneWidget);
-    expect(find.text('Giao dịch tháng này'), findsOneWidget);
-    expect(find.text('Tổng quan'), findsOneWidget);
+    expect(find.text('Giao dịch gần đây'), findsOneWidget);
   });
 
   testWidgets('Bottom navigation opens transactions page', (
@@ -160,8 +165,8 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Tất cả'), findsWidgets);
-    expect(find.text('Thu nhập'), findsWidgets);
-    expect(find.text('Chi tiêu'), findsWidgets);
+    expect(find.text('Thu'), findsWidgets);
+    expect(find.text('Chi'), findsWidgets);
   });
 
   testWidgets('Month selector label is visible on transactions page', (
