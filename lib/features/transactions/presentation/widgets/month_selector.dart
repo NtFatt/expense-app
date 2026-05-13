@@ -34,11 +34,14 @@ class MonthSelector extends StatelessWidget {
           GestureDetector(
             onTap: onTapMonth,
             child: Container(
-              constraints: const BoxConstraints(minWidth: 100),
+              constraints: const BoxConstraints(minWidth: 92, maxWidth: 180),
               alignment: Alignment.center,
               child: Text(
                 context.strings.monthYear(selectedMonth),
                 key: const Key('month_selector_label'),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,

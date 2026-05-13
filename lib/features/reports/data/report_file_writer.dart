@@ -20,5 +20,6 @@ abstract interface class ReportFileWriter {
   Future<ReportFileWriteResult> writeBytes({
     required String fileName,
     required List<int> bytes,
+    String androidDirectoryName = 'reports',
   });
 }

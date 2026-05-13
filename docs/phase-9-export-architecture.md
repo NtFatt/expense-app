@@ -231,3 +231,4 @@ To support Vietnamese text in PDF:
 | `dart:io` / `File` usage | Only in `app_database.dart` for SQLite path; isolated there |
 | Reports `domain/` folder | **Did not exist** — created fresh |
 | Reports `data/` folder | **Did not exist** — created fresh |
+

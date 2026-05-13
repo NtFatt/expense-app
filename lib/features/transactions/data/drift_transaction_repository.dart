@@ -41,6 +41,16 @@ class DriftTransactionRepository implements TransactionRepository {
     await _database.clearTransactions();
   }
 
+  @override
+  Future<void> replaceAll(List<TransactionModel> transactions) async {
+    await _database.transaction(() async {
+      await _database.clearTransactions();
+      for (final TransactionModel transaction in transactions) {
+        await _database.insertTransaction(_mapModelToCompanion(transaction));
+      }
+    });
+  }
+
   TransactionModel _mapRowToModel(database.Transaction row) {
     return TransactionModel(
       id: row.id,

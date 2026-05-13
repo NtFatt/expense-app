@@ -10,4 +10,6 @@ abstract class TransactionRepository {
   Future<void> deleteTransaction(String id);
 
   Future<void> clearAll();
+
+  Future<void> replaceAll(List<TransactionModel> transactions);
 }

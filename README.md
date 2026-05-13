@@ -1,169 +1,131 @@
-# expense_app
+# Expense App
 
-A personal expense tracking application built with Flutter.
+Expense App is an offline/local Flutter personal finance app built for strong CV/demo quality without depending on backend, cloud sync, or authentication.
 
-## Features
+## Overview
 
-- **Add / Edit / Delete transactions** — record income and expenses with category, amount, date, and notes
-- **Monthly Dashboard** — view balance, total income, total expense for the selected month
-- **Transaction Management** — filter by type (all / income / expense), search by category or note, navigate by month
-- **Monthly Statistics** — spending breakdown by category with `fl_chart` visualizations, top category highlight
-- **Local Persistence** — transactions are saved to a local SQLite database on native platforms (Windows/Android); web uses an in-memory store
-- **Report Export** — export transactions as CSV or monthly PDF report; web downloads in-browser, desktop native uses Save As, Android saves into the app documents `reports/` folder
-- **Preferences** — switch app language (Vietnamese/English) and theme (Light/Dark/System); preferences persist locally
-- **Pay Later & Installment Tracker** — track installment plans, pay-later invoices, minimum/custom/full-settlement records, overdue/due-soon status, and neutral policy notes
-- **PDF Vietnamese Support** — PDF reports render Vietnamese text correctly using bundled Noto Sans Unicode font (OFL licensed)
+The app covers:
+
+- Transaction CRUD with validation
+- Search, type filter, and month navigation
+- Dashboard and statistics
+- CSV/PDF transaction export
+- Pay Later / installment tracking
+- EN/VI language and theme preferences
+- Browser-local web persistence
+- Native Drift/SQLite persistence
+- Full-app backup/restore JSON portability
+- Dedicated Pay Later CSV/PDF export
+
+## Runtime Matrix
+
+| Target | Transactions | Pay Later | Notes |
+|---|---|---|---|
+| Chrome/Web | SharedPreferences + JSON | SharedPreferences + JSON | Persists per browser profile/site data |
+| Windows | Drift/SQLite | Drift/SQLite | Native local persistence |
+| Android | Drift/SQLite | Drift/SQLite | Native local persistence |
+
+## Backup And Export
+
+- Transaction CSV export includes UTF-8 BOM and proper escaping for Vietnamese text.
+- Transaction PDF export uses bundled Unicode fonts.
+- Pay Later CSV/PDF export reuses the same platform-aware writer/result flow.
+- Backup export writes versioned JSON:
+  - web: browser download
+  - desktop: Save As
+  - Android: app-documents `backups/`
+- Backup import uses replace-all restore mode on supported file-picker targets.
+- Manual web backup export/import smoke passed on `2026-05-08`.
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Flutter |
-| State Management | Riverpod |
-| Routing | GoRouter |
-| Local Database | Drift / SQLite |
-| Charts | fl_chart |
-| Language | Dart |
+- Flutter + Dart
+- Riverpod
+- GoRouter
+- Drift / SQLite
+- fl_chart
+- pdf
+- file_selector
+- shared_preferences
 
-## Persistence
+## Architecture
 
-The app uses a **platform-aware repository strategy**:
+```text
+lib/
+  app/
+  core/
+  features/
+    backup/
+    pay_later/
+    reports/
+    settings/
+    statistics/
+    transactions/
+  shared/
+test/
+docs/
+```
 
-| Platform | Repository | Persists between sessions |
-|----------|-----------|--------------------------|
-| Chrome / Web | `InMemoryTransactionRepository` | No (data resets on reload) |
-| Windows | `DriftTransactionRepository` | **Yes** — `expense_app.sqlite` |
-| Android | `DriftTransactionRepository` | **Yes** |
+Key decisions:
 
-This is achieved via Dart conditional imports — native database code is completely excluded from the web bundle at compile time.
+- Conditional imports keep native Drift code out of the web bundle.
+- Chrome/web uses SharedPreferences-backed repositories.
+- Native Windows/Android keep separate Drift repositories.
+- Backup, export, and persistence stay behind repository/service abstractions.
 
-For current release policy:
-
-- **Web/Chrome is demo-only by design** for transaction persistence in the MVP.
-- **Windows/native is the validated Drift persistence path.**
-- **Android uses the same native path and is now validated in Phase 10B.**
-
-For Pay Later:
-
-- **Windows / Android** use a dedicated `DriftPayLaterRepository` and persist across restart.
-- **Chrome / Web + tests** stay on `InMemoryPayLaterRepository` by design for this phase.
-
-## Report Export
-
-The app supports exporting transaction data as CSV or a monthly PDF report.
-
-### CSV Export
-
-| Platform | Mechanism |
-|----------|-----------|
-| Chrome / Web | Browser download (UTF-8 BOM for Excel compatibility) |
-| Windows / macOS / Linux | Save As dialog via `file_selector` |
-| Android | Save to app documents `reports/` directory |
-
-The exported CSV contains: `id`, `transaction_date`, `type`, `category`, `amount`, `signed_amount`, `note`. Transactions are sorted newest first.
-
-### PDF Monthly Report
-
-| Platform | Mechanism |
-|----------|-----------|
-| Chrome / Web | Browser download (via `package:web` Blob API) |
-| Windows / macOS / Linux | Save As dialog via `file_selector` |
-| Android | Save to app documents `reports/` directory |
-
-The PDF includes a monthly title, income/expense/balance overview, category breakdown with percentages, a transaction table, and a generated-at timestamp. Vietnamese text is rendered using the bundled **Noto Sans** Unicode font (assets/fonts/NotoSans-Regular.ttf and NotoSans-Bold.ttf, OFL licensed).
-
-### Data Backup
-
-SQLite/Drift database backup is out of scope for Phase 9. The app's persistence is handled by the local SQLite database on native platforms.
-
-### Current Export Hardening Status
-
-- Web CSV export smoke: verified
-- Web PDF export smoke: verified
-- Web empty-month PDF smoke: verified
-- Android CSV export smoke: verified
-- Android PDF export smoke: verified
-- Windows release build: verified
-- Native Windows Save As manual smoke: pending
-
-## Preferences
-
-- **Language** — Vietnamese (`vi`) and English (`en`)
-- **Theme** — Light, Dark, or System
-- **Persistence** — saved locally with `shared_preferences`
-- **Localization approach** — lightweight typed strings (`AppLocale`, `AppStringKey`, `AppStrings`) designed to migrate cleanly to Flutter ARB/gen-l10n later
-
-## Pay Later & Installment Tracker
-
-- **What it tracks** — installment plans, pay-later invoices, outstanding balances, minimum due, next due date, overdue/due-soon status, and recorded payments inside the app
-- **Current persistence scope** — native platforms now persist Pay Later with Drift/SQLite; web/test remain in-memory by design
-- **What it does not do** — no real payment, no lending, no bank integration, no legal/financial advice, no automatic transaction creation when a pay-later payment is recorded
-- **User wording** — the UI stays neutral and focuses on tracking, estimates, and payment record-keeping only
-- **Current export scope** — no dedicated Pay Later CSV/PDF export is included in this phase
-
-## Validation
+## Run Commands
 
 ```bash
-flutter analyze   # No issues
-flutter test      # 174 tests
+flutter pub get
+flutter run -d chrome
+flutter run -d windows
+flutter run -d android
+```
+
+## Validation Commands
+
+```bash
+dart format lib test
+flutter analyze
+flutter test
 flutter run -d chrome --web-run-headless --no-resident
 flutter build windows --release
 flutter build apk --debug
 flutter build apk --release
 ```
 
-## Getting Started
+## Demo Flow
 
-```bash
-flutter pub get
-flutter run -d chrome
-```
+1. Dashboard overview
+2. Add expense and income
+3. Search/filter/month flow
+4. Statistics page
+5. Transaction CSV/PDF export
+6. Backup JSON export/import
+7. Pay Later create plan/invoice/payment
+8. Pay Later CSV/PDF export
+9. Settings EN/VI + theme
 
-For native builds, enable Windows Developer Mode first:
+Detailed script: [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md)
 
-```powershell
-start ms-settings:developers
-```
+## Known Limitations
 
-## Project Structure
+- Web persistence is browser-local, not account-based.
+- Restore currently supports `replace all`; merge mode is deferred.
+- Future storage schema migrations still require explicit follow-up work.
+- Android release signing is documented but not configured with a real keystore in repo.
+- App icon/store packaging remains documentation-ready, not store-ready.
+- No cloud sync/auth by design.
 
-```
-lib/
-  app/           # App shell, router, theme
-  core/
-    database/    # Drift tables and AppDatabase
-    localization/# Typed lightweight localization layer
-    utils/       # Currency/date formatters
-    constants/   # App constants
-  features/
-    transactions/ # Domain, data, controllers, pages, widgets
-    categories/  # Category models and defaults
-    statistics/  # Statistics pages and charts
-    reports/     # Reports page (export UI)
-    settings/    # App preferences: locale + theme mode
-    pay_later/   # Installment plans, pay-later invoices, payment tracking
-  shared/
-    widgets/     # Reusable UI components
-test/
-  app_locale_test.dart
-  app_strings_test.dart
-  app_preferences_controller_test.dart
-  transaction_filters_test.dart
-  transaction_filter_controller_test.dart
-  transaction_type_test.dart
-  widget_test.dart
-```
+## Docs
 
-## Status
-
-See `docs/PROJECT_PROGRESS_CHECKLIST.md` for full project roadmap and completed phases.
-
-Canonical current truth:
-
-- Phase 8: native transaction persistence done; web remains demo-only in-memory by design; Android native path is now verified
-- Phase 9: web export smoke verified; Android export hardened and manually verified; Windows manual Save As smoke still pending, so export remains under review
-- Phase 9E: done
-- Phase 9F / 10B: Pay Later is persisted on native via Drift, while web/test remain in-memory by design
-- Phase 10: Android toolchain, APK builds, and emulator smoke are complete
-
-Next: finish native Windows export Save As smoke and decide separately whether Pay Later-specific export should be added in a future phase.
+- [docs/PROJECT_PROGRESS_CHECKLIST.md](docs/PROJECT_PROGRESS_CHECKLIST.md)
+- [docs/PERSISTENCE_NOTES.md](docs/PERSISTENCE_NOTES.md)
+- [docs/STORAGE_MIGRATION_PLAN.md](docs/STORAGE_MIGRATION_PLAN.md)
+- [docs/EXPORT_SMOKE_CHECKLIST.md](docs/EXPORT_SMOKE_CHECKLIST.md)
+- [docs/FINAL_QA_CHECKLIST.md](docs/FINAL_QA_CHECKLIST.md)
+- [docs/DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md)
+- [docs/RELEASE_READINESS.md](docs/RELEASE_READINESS.md)
+- [docs/ANDROID_RELEASE_SIGNING.md](docs/ANDROID_RELEASE_SIGNING.md)
+- [docs/STORE_RELEASE_CHECKLIST.md](docs/STORE_RELEASE_CHECKLIST.md)
+- [docs/APP_ICON_GUIDE.md](docs/APP_ICON_GUIDE.md)

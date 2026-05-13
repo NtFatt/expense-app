@@ -131,6 +131,35 @@ class DriftPayLaterRepository implements PayLaterRepository {
     });
   }
 
+  @override
+  Future<void> replaceAll({
+    required List<InstallmentPlan> plans,
+    required List<PayLaterInvoice> invoices,
+    required List<PayLaterPayment> payments,
+  }) async {
+    await _database.transaction(() async {
+      await _database.delete(_database.payLaterPayments).go();
+      await _database.delete(_database.payLaterInvoices).go();
+      await _database.delete(_database.payLaterInstallmentPlans).go();
+
+      for (final InstallmentPlan plan in plans) {
+        await _database
+            .into(_database.payLaterInstallmentPlans)
+            .insert(_mapPlanToCompanion(plan));
+      }
+      for (final PayLaterInvoice invoice in invoices) {
+        await _database
+            .into(_database.payLaterInvoices)
+            .insert(_mapInvoiceToCompanion(invoice));
+      }
+      for (final PayLaterPayment payment in payments) {
+        await _database
+            .into(_database.payLaterPayments)
+            .insert(_mapPaymentToCompanion(payment));
+      }
+    });
+  }
+
   Future<int> _updateInstallmentPlanRow(InstallmentPlan plan) {
     return (_database.update(_database.payLaterInstallmentPlans)
           ..where((table) => table.id.equals(plan.id)))

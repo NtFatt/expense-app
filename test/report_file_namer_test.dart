@@ -73,5 +73,29 @@ void main() {
         isNot(ReportFileNamer.monthlyPdfName(dec)),
       );
     });
+
+    test('backup JSON filename format is correct', () {
+      final dt = DateTime(2026, 5, 8, 14, 30);
+      expect(
+        ReportFileNamer.backupJsonName(dt),
+        'expense_backup_20260508_1430.json',
+      );
+    });
+
+    test('Pay Later CSV filename format is correct', () {
+      final dt = DateTime(2026, 5, 8, 15, 40);
+      expect(
+        ReportFileNamer.payLaterCsvName(dt),
+        'expense_pay_later_20260508_1540.csv',
+      );
+    });
+
+    test('Pay Later PDF filename format is correct', () {
+      final dt = DateTime(2026, 5, 8, 15, 40);
+      expect(
+        ReportFileNamer.payLaterPdfName(dt),
+        'expense_pay_later_report_20260508_1540.pdf',
+      );
+    });
   });
 }

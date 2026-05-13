@@ -20,6 +20,7 @@ class WebReportFileWriter implements ReportFileWriter {
   Future<ReportFileWriteResult> writeBytes({
     required String fileName,
     required List<int> bytes,
+    String androidDirectoryName = 'reports',
   }) async {
     final Uint8List data = Uint8List.fromList(bytes);
 
@@ -50,6 +51,9 @@ class WebReportFileWriter implements ReportFileWriter {
   }
 
   String _mimeType(String fileName) {
+    if (fileName.toLowerCase().endsWith('.json')) {
+      return 'application/json;charset=utf-8';
+    }
     if (fileName.toLowerCase().endsWith('.pdf')) {
       return 'application/pdf';
     }

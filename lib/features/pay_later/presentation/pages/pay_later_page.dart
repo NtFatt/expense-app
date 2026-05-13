@@ -16,6 +16,7 @@ import 'package:expense_app/features/pay_later/presentation/widgets/payment_acti
 import 'package:expense_app/shared/widgets/app_scaffold.dart';
 import 'package:expense_app/shared/widgets/empty_state.dart';
 import 'package:expense_app/shared/widgets/section_header.dart';
+import 'package:expense_app/shared/widgets/state_feedback_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -28,6 +29,8 @@ class PayLaterPage extends ConsumerWidget {
     final AsyncValue<PayLaterState> state = ref.watch(
       payLaterControllerProvider,
     );
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
 
     return AppScaffold(
       title: context.strings.t(AppStringKey.payLaterTitle),
@@ -39,18 +42,50 @@ class PayLaterPage extends ConsumerWidget {
         ),
       ],
       child: state.when(
-        loading: () => const SizedBox(
-          height: 320,
-          child: Center(child: CircularProgressIndicator()),
+        loading: () => StateFeedbackCard(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              const CircularProgressIndicator(),
+              const SizedBox(height: 14),
+              Text(
+                context.strings.t(AppStringKey.loadingData),
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
         ),
         error: (Object error, StackTrace stackTrace) {
-          return SizedBox(
-            height: 320,
-            child: Center(
-              child: Text(
-                '${context.strings.t(AppStringKey.couldNotLoadPayLater)}\n$error',
-                textAlign: TextAlign.center,
-              ),
+          return StateFeedbackCard(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(
+                  Icons.sync_problem_rounded,
+                  size: 40,
+                  color: colorScheme.error,
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  context.strings.t(AppStringKey.couldNotLoadPayLater),
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  error.toString(),
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.45,
+                  ),
+                ),
+              ],
             ),
           );
         },
@@ -772,36 +807,52 @@ class _InstallmentPlanCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      plan.title,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+          LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final Widget titleBlock = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    plan.title,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      plan.providerName,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    plan.providerName,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              PayLaterStatusBadge.forInstallment(
+                  ),
+                ],
+              );
+              final Widget statusBadge = PayLaterStatusBadge.forInstallment(
                 context: context,
                 plan: plan,
                 now: now,
-              ),
-            ],
+              );
+
+              if (constraints.maxWidth < 360) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    titleBlock,
+                    const SizedBox(height: 12),
+                    statusBadge,
+                  ],
+                );
+              }
+
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Expanded(child: titleBlock),
+                  const SizedBox(width: 12),
+                  statusBadge,
+                ],
+              );
+            },
           ),
           const SizedBox(height: 16),
           _InfoRow(
@@ -918,36 +969,52 @@ class _PayLaterInvoiceCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      invoice.providerName,
-                      style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+          LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final Widget titleBlock = Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    invoice.providerName,
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      context.strings.monthYear(invoice.statementMonth),
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    context.strings.monthYear(invoice.statementMonth),
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 12),
-              PayLaterStatusBadge.forInvoice(
+                  ),
+                ],
+              );
+              final Widget statusBadge = PayLaterStatusBadge.forInvoice(
                 context: context,
                 invoice: invoice,
                 now: now,
-              ),
-            ],
+              );
+
+              if (constraints.maxWidth < 360) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    titleBlock,
+                    const SizedBox(height: 12),
+                    statusBadge,
+                  ],
+                );
+              }
+
+              return Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Expanded(child: titleBlock),
+                  const SizedBox(width: 12),
+                  statusBadge,
+                ],
+              );
+            },
           ),
           const SizedBox(height: 16),
           _InfoRow(
@@ -1117,24 +1184,53 @@ class _InfoRow extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: Text(
-              label,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: colorScheme.onSurfaceVariant,
+      child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          if (constraints.maxWidth < 360) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Text(
+                  label,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    value,
+                    textAlign: TextAlign.right,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+
+          return Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
+                  label,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
               ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Text(
-            value,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-        ],
+              const SizedBox(width: 12),
+              Text(
+                value,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

@@ -20,9 +20,11 @@ class NativeReportFileWriter implements ReportFileWriter {
   Future<ReportFileWriteResult> writeBytes({
     required String fileName,
     required List<int> bytes,
+    String androidDirectoryName = 'reports',
   }) async {
     if (Platform.isAndroid) {
       final File file = await _writeToAndroidDocumentsDirectory(
+        directoryName: androidDirectoryName,
         fileName: fileName,
         bytes: bytes,
       );
@@ -42,13 +44,14 @@ class NativeReportFileWriter implements ReportFileWriter {
   }
 
   Future<File> _writeToAndroidDocumentsDirectory({
+    required String directoryName,
     required String fileName,
     required List<int> bytes,
   }) async {
     final Directory documentsDirectory =
         await getApplicationDocumentsDirectory();
     final Directory exportDirectory = Directory(
-      path.join(documentsDirectory.path, 'reports'),
+      path.join(documentsDirectory.path, directoryName),
     );
     await exportDirectory.create(recursive: true);
 

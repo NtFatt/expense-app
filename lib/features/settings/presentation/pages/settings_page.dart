@@ -58,7 +58,10 @@ class SettingsPage extends ConsumerWidget {
         children: <Widget>[
           Text(
             context.strings.t(AppStringKey.settingsSubtitle),
-            style: TextStyle(color: colorScheme.onSurfaceVariant, height: 1.45),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: colorScheme.onSurfaceVariant,
+              height: 1.45,
+            ),
           ),
           const SizedBox(height: 20),
           _SettingsSection(
@@ -136,7 +139,7 @@ class SettingsPage extends ConsumerWidget {
                   const SizedBox(height: 6),
                   Text(
                     context.strings.t(AppStringKey.localPreferencesDescription),
-                    style: TextStyle(
+                    style: theme.textTheme.bodyMedium?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                       height: 1.45,
                     ),

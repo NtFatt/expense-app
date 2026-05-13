@@ -32,4 +32,31 @@ class ReportFileNamer {
     final String month = _twoDigits(selectedMonth.month);
     return 'expense_monthly_report_${year}_$month.pdf';
   }
+
+  static String backupJsonName(DateTime generatedAt) {
+    final String year = generatedAt.year.toString();
+    final String month = _twoDigits(generatedAt.month);
+    final String day = _twoDigits(generatedAt.day);
+    final String hour = _twoDigits(generatedAt.hour);
+    final String minute = _twoDigits(generatedAt.minute);
+    return 'expense_backup_$year$month${day}_$hour$minute.json';
+  }
+
+  static String payLaterCsvName(DateTime generatedAt) {
+    final String year = generatedAt.year.toString();
+    final String month = _twoDigits(generatedAt.month);
+    final String day = _twoDigits(generatedAt.day);
+    final String hour = _twoDigits(generatedAt.hour);
+    final String minute = _twoDigits(generatedAt.minute);
+    return 'expense_pay_later_$year$month${day}_$hour$minute.csv';
+  }
+
+  static String payLaterPdfName(DateTime generatedAt) {
+    final String year = generatedAt.year.toString();
+    final String month = _twoDigits(generatedAt.month);
+    final String day = _twoDigits(generatedAt.day);
+    final String hour = _twoDigits(generatedAt.hour);
+    final String minute = _twoDigits(generatedAt.minute);
+    return 'expense_pay_later_report_$year$month${day}_$hour$minute.pdf';
+  }
 }

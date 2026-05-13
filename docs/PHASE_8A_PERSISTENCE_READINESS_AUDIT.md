@@ -264,3 +264,4 @@ The persistence infrastructure is fully ready:
 8. Provider structure needs only a one-line change in Phase 8B.
 
 **The only action needed in Phase 8B is switching the native branch in `_createDefaultTransactionRepository()` to return `DriftTransactionRepository(AppDatabase())`.**
+

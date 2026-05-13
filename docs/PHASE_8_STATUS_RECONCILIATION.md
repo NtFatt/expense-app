@@ -74,3 +74,4 @@ Use this wording in the checklist:
   Native transaction persistence is complete.
   Chrome/web remains demo-only `InMemoryTransactionRepository` by design.
   Android native validation is complete as of Phase 10B.
+

@@ -61,6 +61,15 @@ class _PaymentActionDialogState extends State<_PaymentActionDialog> {
     super.dispose();
   }
 
+  bool get _isSubmitEnabled {
+    if (_selectedType != PayLaterPaymentType.customPayment) {
+      return true;
+    }
+
+    final double? amount = double.tryParse(_amountController.text.trim());
+    return amount != null && amount > 0 && amount <= widget.outstandingAmount;
+  }
+
   void _submit() {
     if (_selectedType == PayLaterPaymentType.customPayment &&
         !_formKey.currentState!.validate()) {
@@ -153,6 +162,7 @@ class _PaymentActionDialogState extends State<_PaymentActionDialog> {
                   const SizedBox(height: 8),
                   TextFormField(
                     controller: _amountController,
+                    onChanged: (_) => setState(() {}),
                     keyboardType: const TextInputType.numberWithOptions(
                       decimal: true,
                     ),
@@ -209,7 +219,7 @@ class _PaymentActionDialogState extends State<_PaymentActionDialog> {
           child: Text(context.strings.t(AppStringKey.cancel)),
         ),
         FilledButton(
-          onPressed: _submit,
+          onPressed: _isSubmitEnabled ? _submit : null,
           child: Text(context.strings.t(AppStringKey.save)),
         ),
       ],

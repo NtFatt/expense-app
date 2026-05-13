@@ -30,6 +30,7 @@ class MetricCard extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             padding: const EdgeInsets.all(10),
@@ -39,17 +40,21 @@ class MetricCard extends StatelessWidget {
             ),
             child: Icon(icon, color: accentColor),
           ),
-          const SizedBox(height: 14),
+          const SizedBox(height: 12),
           Text(
             title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: theme.textTheme.bodyMedium?.copyWith(
               color: colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 4),
           Text(
             value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w900,
             ),

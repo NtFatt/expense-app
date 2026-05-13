@@ -112,4 +112,21 @@ class InMemoryPayLaterRepository implements PayLaterRepository {
 
     _payments.add(payment);
   }
+
+  @override
+  Future<void> replaceAll({
+    required List<InstallmentPlan> plans,
+    required List<PayLaterInvoice> invoices,
+    required List<PayLaterPayment> payments,
+  }) async {
+    _plans
+      ..clear()
+      ..addAll(plans);
+    _invoices
+      ..clear()
+      ..addAll(invoices);
+    _payments
+      ..clear()
+      ..addAll(payments);
+  }
 }

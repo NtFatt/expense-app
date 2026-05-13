@@ -15,6 +15,7 @@ import 'package:expense_app/shared/widgets/app_bottom_navigation.dart';
 import 'package:expense_app/shared/widgets/app_scaffold.dart';
 import 'package:expense_app/shared/widgets/empty_state.dart';
 import 'package:expense_app/shared/widgets/section_header.dart';
+import 'package:expense_app/shared/widgets/state_feedback_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -46,14 +47,50 @@ class DashboardPage extends ConsumerWidget {
         label: Text(context.strings.t(AppStringKey.addTransaction)),
       ),
       child: transactionState.when(
-        loading: () =>
-            const _DashboardFeedbackState(child: CircularProgressIndicator()),
+        loading: () => StateFeedbackCard(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              const CircularProgressIndicator(),
+              const SizedBox(height: 14),
+              Text(
+                context.strings.t(AppStringKey.loadingData),
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
         error: (Object error, StackTrace stackTrace) {
-          return _DashboardFeedbackState(
-            child: Text(
-              '${context.strings.t(AppStringKey.couldNotLoadTransactions)}\n$error',
-              textAlign: TextAlign.center,
-              style: const TextStyle(height: 1.5),
+          return StateFeedbackCard(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(
+                  Icons.sync_problem_rounded,
+                  size: 40,
+                  color: colorScheme.error,
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  context.strings.t(AppStringKey.couldNotLoadTransactions),
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  error.toString(),
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.45,
+                  ),
+                ),
+              ],
             ),
           );
         },
@@ -109,34 +146,49 @@ class DashboardPage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: SummaryCard(
-                      title: context.strings.t(AppStringKey.totalIncome),
-                      amount: formatCurrency(
-                        summary.totalIncome,
-                        withSign: false,
+              LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  final double itemWidth = constraints.maxWidth >= 640
+                      ? (constraints.maxWidth - 12) / 2
+                      : constraints.maxWidth;
+
+                  return Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: <Widget>[
+                      SizedBox(
+                        width: itemWidth,
+                        child: SummaryCard(
+                          title: context.strings.t(AppStringKey.totalIncome),
+                          amount: formatCurrency(
+                            summary.totalIncome,
+                            withSign: false,
+                          ),
+                          icon: Icons.trending_up,
+                          accentColor: const Color(0xFF16A34A),
+                          backgroundColor: const Color(
+                            0xFF16A34A,
+                          ).withValues(alpha: 0.12),
+                        ),
                       ),
-                      icon: Icons.trending_up,
-                      accentColor: const Color(0xFF16A34A),
-                      backgroundColor: const Color(0xFFF0FDF4),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: SummaryCard(
-                      title: context.strings.t(AppStringKey.totalExpense),
-                      amount: formatCurrency(
-                        summary.totalExpense,
-                        withSign: false,
+                      SizedBox(
+                        width: itemWidth,
+                        child: SummaryCard(
+                          title: context.strings.t(AppStringKey.totalExpense),
+                          amount: formatCurrency(
+                            summary.totalExpense,
+                            withSign: false,
+                          ),
+                          icon: Icons.trending_down,
+                          accentColor: const Color(0xFFEA580C),
+                          backgroundColor: const Color(
+                            0xFFEA580C,
+                          ).withValues(alpha: 0.12),
+                        ),
                       ),
-                      icon: Icons.trending_down,
-                      accentColor: const Color(0xFFEA580C),
-                      backgroundColor: const Color(0xFFFFF7ED),
-                    ),
-                  ),
-                ],
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 20),
               const PayLaterDashboardEntryCard(),
@@ -168,16 +220,5 @@ class DashboardPage extends ConsumerWidget {
         },
       ),
     );
-  }
-}
-
-class _DashboardFeedbackState extends StatelessWidget {
-  const _DashboardFeedbackState({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(height: 320, child: Center(child: child));
   }
 }

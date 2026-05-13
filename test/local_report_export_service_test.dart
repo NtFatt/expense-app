@@ -9,6 +9,7 @@ import 'package:expense_app/features/reports/data/report_file_writer.dart';
 import 'package:expense_app/features/reports/domain/monthly_report_data.dart';
 import 'package:expense_app/features/reports/domain/report_export_format.dart';
 import 'package:expense_app/features/reports/domain/report_export_request.dart';
+import 'package:expense_app/features/reports/domain/report_export_result.dart';
 import 'package:expense_app/features/transactions/domain/transaction_model.dart';
 import 'package:expense_app/features/transactions/domain/transaction_type.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -46,6 +47,7 @@ class FakeReportFileWriter implements ReportFileWriter {
   Future<ReportFileWriteResult> writeBytes({
     required String fileName,
     required List<int> bytes,
+    String androidDirectoryName = 'reports',
   }) async {
     lastFileName = fileName;
     lastBytes = bytes;
@@ -140,6 +142,7 @@ void main() {
 
       final result = await service.exportTransactionsCsv(request);
 
+      expect(result.status, ReportExportStatus.saved);
       expect(result.filePath, isNotNull);
       expect(result.format, ReportExportFormat.csv);
     });
@@ -153,11 +156,8 @@ void main() {
 
       final result = await service.exportTransactionsCsv(request);
 
-      expect(result.message, contains('Đã xuất CSV'));
-      expect(
-        result.message,
-        contains('expense_transactions_20260504_2210.csv'),
-      );
+      expect(result.status, ReportExportStatus.saved);
+      expect(result.message, 'CSV export saved.');
     });
 
     test('cancelled result: writer is called', () async {
@@ -183,6 +183,7 @@ void main() {
 
       final result = await service.exportTransactionsCsv(request);
 
+      expect(result.status, ReportExportStatus.cancelled);
       expect(result.filePath, isNull);
     });
 
@@ -196,7 +197,8 @@ void main() {
 
       final result = await service.exportTransactionsCsv(request);
 
-      expect(result.message, contains('Đã hủy xuất CSV.'));
+      expect(result.status, ReportExportStatus.cancelled);
+      expect(result.message, 'CSV export cancelled.');
     });
 
     test('cancelled result: does not throw', () async {
@@ -233,6 +235,7 @@ void main() {
 
       final result = await service.exportTransactionsCsv(request);
 
+      expect(result.status, ReportExportStatus.unsupported);
       expect(result.filePath, isNull);
     });
 
@@ -246,7 +249,8 @@ void main() {
 
       final result = await service.exportTransactionsCsv(request);
 
-      expect(result.message, contains('chưa hỗ trợ'));
+      expect(result.status, ReportExportStatus.unsupported);
+      expect(result.message, 'CSV export is not supported on this platform.');
     });
 
     // PDF export tests
@@ -279,6 +283,7 @@ void main() {
 
       final result = await service.exportMonthlyPdf(request);
 
+      expect(result.status, ReportExportStatus.saved);
       expect(result.filePath, isNotNull);
       expect(result.format, ReportExportFormat.pdf);
     });
@@ -295,8 +300,8 @@ void main() {
 
       final result = await service.exportMonthlyPdf(request);
 
-      expect(result.message, contains('Đã xuất PDF'));
-      expect(result.message, contains('expense_monthly_report_2026_05.pdf'));
+      expect(result.status, ReportExportStatus.saved);
+      expect(result.message, 'PDF export saved.');
     });
 
     test('exportMonthlyPdf cancelled: filePath is null', () async {
@@ -309,6 +314,7 @@ void main() {
 
       final result = await service.exportMonthlyPdf(request);
 
+      expect(result.status, ReportExportStatus.cancelled);
       expect(result.filePath, isNull);
     });
 
@@ -322,7 +328,8 @@ void main() {
 
       final result = await service.exportMonthlyPdf(request);
 
-      expect(result.message, contains('Đã hủy xuất PDF.'));
+      expect(result.status, ReportExportStatus.cancelled);
+      expect(result.message, 'PDF export cancelled.');
     });
 
     test('exportMonthlyPdf unsupported: filePath is null', () async {
@@ -335,6 +342,7 @@ void main() {
 
       final result = await service.exportMonthlyPdf(request);
 
+      expect(result.status, ReportExportStatus.unsupported);
       expect(result.filePath, isNull);
     });
 
@@ -348,7 +356,8 @@ void main() {
 
       final result = await service.exportMonthlyPdf(request);
 
-      expect(result.message, contains('chưa hỗ trợ'));
+      expect(result.status, ReportExportStatus.unsupported);
+      expect(result.message, 'PDF export is not supported on this platform.');
     });
 
     test(
@@ -373,7 +382,8 @@ void main() {
         final result = await service.exportMonthlyPdf(request);
 
         expect(result.format, ReportExportFormat.pdf);
-        expect(result.message, contains('Không thể tạo PDF'));
+        expect(result.status, ReportExportStatus.failed);
+        expect(result.message, contains('PDF generation failed'));
         expect(result.filePath, isNull);
       },
     );

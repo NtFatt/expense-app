@@ -12,6 +12,7 @@ import 'package:expense_app/shared/widgets/app_bottom_navigation.dart';
 import 'package:expense_app/shared/widgets/app_scaffold.dart';
 import 'package:expense_app/shared/widgets/empty_state.dart';
 import 'package:expense_app/shared/widgets/section_header.dart';
+import 'package:expense_app/shared/widgets/state_feedback_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -73,6 +74,8 @@ class TransactionsPage extends ConsumerWidget {
     final TransactionFilterController filterCtrl = ref.read(
       transactionFilterControllerProvider.notifier,
     );
+    final ThemeData theme = Theme.of(context);
+    final ColorScheme colorScheme = theme.colorScheme;
 
     return AppScaffold(
       title: context.strings.t(AppStringKey.transactionsTitle),
@@ -84,19 +87,50 @@ class TransactionsPage extends ConsumerWidget {
         label: Text(context.strings.t(AppStringKey.addTransaction)),
       ),
       child: transactionState.when(
-        loading: () => const SizedBox(
-          height: 320,
-          child: Center(child: CircularProgressIndicator()),
+        loading: () => StateFeedbackCard(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              const CircularProgressIndicator(),
+              const SizedBox(height: 14),
+              Text(
+                context.strings.t(AppStringKey.loadingData),
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
         ),
         error: (Object error, StackTrace stackTrace) {
-          return SizedBox(
-            height: 320,
-            child: Center(
-              child: Text(
-                '${context.strings.t(AppStringKey.couldNotLoadTransactions)}\n$error',
-                textAlign: TextAlign.center,
-                style: const TextStyle(height: 1.5),
-              ),
+          return StateFeedbackCard(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(
+                  Icons.sync_problem_rounded,
+                  size: 40,
+                  color: colorScheme.error,
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  context.strings.t(AppStringKey.couldNotLoadTransactions),
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  error.toString(),
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.45,
+                  ),
+                ),
+              ],
             ),
           );
         },
@@ -156,8 +190,8 @@ class TransactionsPage extends ConsumerWidget {
                 for (final TransactionModel transaction in filteredTransactions)
                   TransactionTile(
                     transaction: transaction,
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
+                    trailing: Wrap(
+                      spacing: 2,
                       children: <Widget>[
                         IconButton(
                           key: Key('edit_transaction_button_${transaction.id}'),
@@ -167,18 +201,18 @@ class TransactionsPage extends ConsumerWidget {
                           onPressed: () => context.push(
                             '/transactions/${transaction.id}/edit',
                           ),
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.edit_outlined,
-                            color: Color(0xFF2563EB),
+                            color: colorScheme.primary,
                           ),
                         ),
                         IconButton(
                           tooltip: context.strings.t(AppStringKey.delete),
                           onPressed: () =>
                               _deleteTransaction(context, ref, transaction),
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.delete_outline_rounded,
-                            color: Color(0xFFDC2626),
+                            color: colorScheme.error,
                           ),
                         ),
                       ],

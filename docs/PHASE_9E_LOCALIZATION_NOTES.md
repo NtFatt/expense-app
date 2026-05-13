@@ -35,3 +35,4 @@ UI labels should go through `AppStrings.of(context)` or the
 4. Enable Flutter `gen-l10n`
 5. Replace `AppStrings.of(context)` usage with generated `AppLocalizations`
 6. Keep the same key names where possible to avoid another UI-wide search
+

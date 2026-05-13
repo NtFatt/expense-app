@@ -66,15 +66,18 @@ class _TransactionFilterBarState extends State<TransactionFilterBar> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              MonthSelector(
-                selectedMonth: widget.filter.selectedMonth,
-                onPreviousMonth: widget.onPreviousMonth,
-                onNextMonth: widget.onNextMonth,
-              ),
-            ],
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                MonthSelector(
+                  selectedMonth: widget.filter.selectedMonth,
+                  onPreviousMonth: widget.onPreviousMonth,
+                  onNextMonth: widget.onNextMonth,
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 12),
           _buildSearchField(),

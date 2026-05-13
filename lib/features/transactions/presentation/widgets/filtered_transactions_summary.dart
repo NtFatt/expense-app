@@ -54,39 +54,46 @@ class FilteredTransactionsSummary extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          GridView.count(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 1.3,
-            children: [
-              _SummaryCell(
-                title: context.strings.t(AppStringKey.totalTransactions),
-                value: transactions.length.toString(),
-                icon: Icons.receipt_long_rounded,
-                accentColor: const Color(0xFF2563EB),
-              ),
-              _SummaryCell(
-                title: context.strings.t(AppStringKey.balance),
-                value: formatCurrency(_balance, withSign: false),
-                icon: Icons.account_balance_wallet_rounded,
-                accentColor: const Color(0xFF7C3AED),
-              ),
-              _SummaryCell(
-                title: context.strings.t(AppStringKey.totalIncome),
-                value: formatCurrency(_totalIncome, withSign: false),
-                icon: Icons.south_west_rounded,
-                accentColor: const Color(0xFF16A34A),
-              ),
-              _SummaryCell(
-                title: context.strings.t(AppStringKey.totalExpense),
-                value: formatCurrency(_totalExpense, withSign: false),
-                icon: Icons.north_east_rounded,
-                accentColor: const Color(0xFFEA580C),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final int crossAxisCount = constraints.maxWidth >= 560 ? 2 : 1;
+              final double childAspectRatio = crossAxisCount == 1 ? 1.45 : 0.95;
+
+              return GridView.count(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                crossAxisCount: crossAxisCount,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: childAspectRatio,
+                children: [
+                  _SummaryCell(
+                    title: context.strings.t(AppStringKey.totalTransactions),
+                    value: transactions.length.toString(),
+                    icon: Icons.receipt_long_rounded,
+                    accentColor: const Color(0xFF2563EB),
+                  ),
+                  _SummaryCell(
+                    title: context.strings.t(AppStringKey.balance),
+                    value: formatCurrency(_balance, withSign: false),
+                    icon: Icons.account_balance_wallet_rounded,
+                    accentColor: const Color(0xFF7C3AED),
+                  ),
+                  _SummaryCell(
+                    title: context.strings.t(AppStringKey.totalIncome),
+                    value: formatCurrency(_totalIncome, withSign: false),
+                    icon: Icons.south_west_rounded,
+                    accentColor: const Color(0xFF16A34A),
+                  ),
+                  _SummaryCell(
+                    title: context.strings.t(AppStringKey.totalExpense),
+                    value: formatCurrency(_totalExpense, withSign: false),
+                    icon: Icons.north_east_rounded,
+                    accentColor: const Color(0xFFEA580C),
+                  ),
+                ],
+              );
+            },
           ),
         ],
       ),
@@ -121,6 +128,7 @@ class _SummaryCell extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             padding: const EdgeInsets.all(10),
@@ -133,6 +141,8 @@ class _SummaryCell extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: theme.textTheme.bodySmall?.copyWith(
               color: colorScheme.onSurfaceVariant,
               fontWeight: FontWeight.w600,
@@ -142,6 +152,8 @@ class _SummaryCell extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.w900,
               fontSize: 17,

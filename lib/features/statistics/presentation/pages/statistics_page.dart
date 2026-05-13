@@ -14,6 +14,7 @@ import 'package:expense_app/shared/widgets/app_bottom_navigation.dart';
 import 'package:expense_app/shared/widgets/app_scaffold.dart';
 import 'package:expense_app/shared/widgets/empty_state.dart';
 import 'package:expense_app/shared/widgets/section_header.dart';
+import 'package:expense_app/shared/widgets/state_feedback_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -39,19 +40,50 @@ class StatisticsPage extends ConsumerWidget {
       title: context.strings.t(AppStringKey.statisticsTitle),
       bottomNavigationBar: const AppBottomNavigation(),
       child: transactionState.when(
-        loading: () => const SizedBox(
-          height: 320,
-          child: Center(child: CircularProgressIndicator()),
+        loading: () => StateFeedbackCard(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              const CircularProgressIndicator(),
+              const SizedBox(height: 14),
+              Text(
+                context.strings.t(AppStringKey.loadingData),
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
         ),
         error: (Object error, StackTrace stackTrace) {
-          return SizedBox(
-            height: 320,
-            child: Center(
-              child: Text(
-                '${context.strings.t(AppStringKey.couldNotLoadStatistics)}\n$error',
-                textAlign: TextAlign.center,
-                style: const TextStyle(height: 1.5),
-              ),
+          return StateFeedbackCard(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                Icon(
+                  Icons.sync_problem_rounded,
+                  size: 40,
+                  color: colorScheme.error,
+                ),
+                const SizedBox(height: 14),
+                Text(
+                  context.strings.t(AppStringKey.couldNotLoadStatistics),
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  error.toString(),
+                  textAlign: TextAlign.center,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                    height: 1.45,
+                  ),
+                ),
+              ],
             ),
           );
         },
@@ -99,42 +131,58 @@ class StatisticsPage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              GridView.count(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                crossAxisCount: 2,
-                crossAxisSpacing: 12,
-                mainAxisSpacing: 12,
-                childAspectRatio: 1.3,
-                children: [
-                  StatisticsSummaryCard(
-                    title: context.strings.t(AppStringKey.totalIncome),
-                    value: formatCurrency(summary.totalIncome, withSign: false),
-                    icon: Icons.south_west_rounded,
-                    accentColor: const Color(0xFF16A34A),
-                  ),
-                  StatisticsSummaryCard(
-                    title: context.strings.t(AppStringKey.totalExpense),
-                    value: formatCurrency(
-                      summary.totalExpense,
-                      withSign: false,
-                    ),
-                    icon: Icons.north_east_rounded,
-                    accentColor: const Color(0xFFEA580C),
-                  ),
-                  StatisticsSummaryCard(
-                    title: context.strings.t(AppStringKey.balance),
-                    value: formatCurrency(summary.balance, withSign: false),
-                    icon: Icons.account_balance_wallet_rounded,
-                    accentColor: const Color(0xFF2563EB),
-                  ),
-                  StatisticsSummaryCard(
-                    title: context.strings.t(AppStringKey.transactionCount),
-                    value: summary.totalTransactions.toString(),
-                    icon: Icons.receipt_long_rounded,
-                    accentColor: const Color(0xFF7C3AED),
-                  ),
-                ],
+              LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  final int crossAxisCount = constraints.maxWidth >= 900
+                      ? 4
+                      : constraints.maxWidth >= 560
+                      ? 2
+                      : 1;
+                  final double childAspectRatio = crossAxisCount == 1
+                      ? 1.55
+                      : 1.05;
+
+                  return GridView.count(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: crossAxisCount,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    childAspectRatio: childAspectRatio,
+                    children: [
+                      StatisticsSummaryCard(
+                        title: context.strings.t(AppStringKey.totalIncome),
+                        value: formatCurrency(
+                          summary.totalIncome,
+                          withSign: false,
+                        ),
+                        icon: Icons.south_west_rounded,
+                        accentColor: const Color(0xFF16A34A),
+                      ),
+                      StatisticsSummaryCard(
+                        title: context.strings.t(AppStringKey.totalExpense),
+                        value: formatCurrency(
+                          summary.totalExpense,
+                          withSign: false,
+                        ),
+                        icon: Icons.north_east_rounded,
+                        accentColor: const Color(0xFFEA580C),
+                      ),
+                      StatisticsSummaryCard(
+                        title: context.strings.t(AppStringKey.balance),
+                        value: formatCurrency(summary.balance, withSign: false),
+                        icon: Icons.account_balance_wallet_rounded,
+                        accentColor: const Color(0xFF2563EB),
+                      ),
+                      StatisticsSummaryCard(
+                        title: context.strings.t(AppStringKey.transactionCount),
+                        value: summary.totalTransactions.toString(),
+                        icon: Icons.receipt_long_rounded,
+                        accentColor: const Color(0xFF7C3AED),
+                      ),
+                    ],
+                  );
+                },
               ),
               const SizedBox(height: 24),
               if (summary.totalExpense == 0)
@@ -217,35 +265,62 @@ class _CategoryBreakdownRow extends StatelessWidget {
     final ThemeData theme = Theme.of(context);
     final ColorScheme colorScheme = theme.colorScheme;
 
-    return Row(
-      children: [
-        Expanded(
-          child: Text(
-            summary.category,
-            style: theme.textTheme.bodyLarge?.copyWith(
-              fontWeight: FontWeight.w700,
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        final Widget amountRow = Row(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            Text(
+              formatCurrency(summary.amount, withSign: false),
+              style: theme.textTheme.bodyLarge?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
             ),
-          ),
-        ),
-        Text(
-          formatCurrency(summary.amount, withSign: false),
-          style: theme.textTheme.bodyLarge?.copyWith(
-            fontWeight: FontWeight.w800,
-          ),
-        ),
-        const SizedBox(width: 12),
-        SizedBox(
-          width: 56,
-          child: Text(
-            '${percent.toStringAsFixed(0)}%',
-            textAlign: TextAlign.right,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
+            const SizedBox(width: 12),
+            SizedBox(
+              width: 56,
+              child: Text(
+                '${percent.toStringAsFixed(0)}%',
+                textAlign: TextAlign.right,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
-          ),
-        ),
-      ],
+          ],
+        );
+
+        if (constraints.maxWidth < 360) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Text(
+                summary.category,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Align(alignment: Alignment.centerRight, child: amountRow),
+            ],
+          );
+        }
+
+        return Row(
+          children: <Widget>[
+            Expanded(
+              child: Text(
+                summary.category,
+                style: theme.textTheme.bodyLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+            amountRow,
+          ],
+        );
+      },
     );
   }
 }

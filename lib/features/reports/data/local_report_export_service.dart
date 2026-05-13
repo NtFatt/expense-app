@@ -43,32 +43,42 @@ class LocalReportExportService implements ReportExportService {
     );
     final String csv = _csvExporter.generate(request.transactions);
     final List<int> bytes = utf8.encode(csv);
-    final writeResult = await _fileWriter.writeBytes(
-      fileName: fileName,
-      bytes: bytes,
-    );
+    final writeResult = await _writeFile(fileName: fileName, bytes: bytes);
+
+    if (writeResult == null) {
+      return ReportExportResult(
+        format: ReportExportFormat.csv,
+        fileName: fileName,
+        status: ReportExportStatus.failed,
+        filePath: null,
+        message: 'Could not write CSV bytes to the selected destination.',
+      );
+    }
 
     switch (writeResult.status) {
       case ReportFileWriteStatus.saved:
         return ReportExportResult(
           format: ReportExportFormat.csv,
           fileName: fileName,
+          status: ReportExportStatus.saved,
           filePath: writeResult.filePath,
-          message: 'Đã xuất CSV: $fileName',
+          message: 'CSV export saved.',
         );
       case ReportFileWriteStatus.cancelled:
         return ReportExportResult(
           format: ReportExportFormat.csv,
           fileName: fileName,
+          status: ReportExportStatus.cancelled,
           filePath: null,
-          message: 'Đã hủy xuất CSV.',
+          message: 'CSV export cancelled.',
         );
       case ReportFileWriteStatus.unsupported:
         return ReportExportResult(
           format: ReportExportFormat.csv,
           fileName: fileName,
+          status: ReportExportStatus.unsupported,
           filePath: null,
-          message: 'Xuất CSV chưa hỗ trợ lưu file trên nền tảng này.',
+          message: 'CSV export is not supported on this platform.',
         );
     }
   }
@@ -94,38 +104,60 @@ class LocalReportExportService implements ReportExportService {
       return ReportExportResult(
         format: ReportExportFormat.pdf,
         fileName: fileName,
+        status: ReportExportStatus.failed,
         filePath: null,
-        message: 'Không thể tạo PDF. Vui lòng thử lại.',
+        message: 'PDF generation failed: $e',
       );
     }
 
-    final writeResult = await _fileWriter.writeBytes(
-      fileName: fileName,
-      bytes: pdfBytes,
-    );
+    final writeResult = await _writeFile(fileName: fileName, bytes: pdfBytes);
+
+    if (writeResult == null) {
+      return ReportExportResult(
+        format: ReportExportFormat.pdf,
+        fileName: fileName,
+        status: ReportExportStatus.failed,
+        filePath: null,
+        message: 'Could not write PDF bytes to the selected destination.',
+      );
+    }
 
     switch (writeResult.status) {
       case ReportFileWriteStatus.saved:
         return ReportExportResult(
           format: ReportExportFormat.pdf,
           fileName: fileName,
+          status: ReportExportStatus.saved,
           filePath: writeResult.filePath,
-          message: 'Đã xuất PDF: $fileName',
+          message: 'PDF export saved.',
         );
       case ReportFileWriteStatus.cancelled:
         return ReportExportResult(
           format: ReportExportFormat.pdf,
           fileName: fileName,
+          status: ReportExportStatus.cancelled,
           filePath: null,
-          message: 'Đã hủy xuất PDF.',
+          message: 'PDF export cancelled.',
         );
       case ReportFileWriteStatus.unsupported:
         return ReportExportResult(
           format: ReportExportFormat.pdf,
           fileName: fileName,
+          status: ReportExportStatus.unsupported,
           filePath: null,
-          message: 'Xuất PDF chưa hỗ trợ lưu file trên nền tảng này.',
+          message: 'PDF export is not supported on this platform.',
         );
+    }
+  }
+
+  Future<ReportFileWriteResult?> _writeFile({
+    required String fileName,
+    required List<int> bytes,
+  }) async {
+    try {
+      return await _fileWriter.writeBytes(fileName: fileName, bytes: bytes);
+    } catch (_) {
+      return null;
     }
   }
 }

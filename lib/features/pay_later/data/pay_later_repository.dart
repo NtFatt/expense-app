@@ -26,4 +26,10 @@ abstract class PayLaterRepository {
     InstallmentPlan? updatedPlan,
     PayLaterInvoice? updatedInvoice,
   });
+
+  Future<void> replaceAll({
+    required List<InstallmentPlan> plans,
+    required List<PayLaterInvoice> invoices,
+    required List<PayLaterPayment> payments,
+  });
 }

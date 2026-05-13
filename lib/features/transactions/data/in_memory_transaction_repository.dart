@@ -3,8 +3,10 @@ import 'package:expense_app/features/transactions/domain/transaction_model.dart'
 import 'package:expense_app/features/transactions/domain/transaction_type.dart';
 
 class InMemoryTransactionRepository implements TransactionRepository {
-  InMemoryTransactionRepository()
-    : _transactions = <TransactionModel>[..._seedTransactions()];
+  InMemoryTransactionRepository({List<TransactionModel>? initialTransactions})
+    : _transactions = <TransactionModel>[
+        ...(initialTransactions ?? seedTransactions()),
+      ];
 
   final List<TransactionModel> _transactions;
 
@@ -43,7 +45,14 @@ class InMemoryTransactionRepository implements TransactionRepository {
     _transactions.clear();
   }
 
-  static List<TransactionModel> _seedTransactions() {
+  @override
+  Future<void> replaceAll(List<TransactionModel> transactions) async {
+    _transactions
+      ..clear()
+      ..addAll(transactions);
+  }
+
+  static List<TransactionModel> seedTransactions() {
     final DateTime now = DateTime.now();
     return <TransactionModel>[
       TransactionModel(

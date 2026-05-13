@@ -132,3 +132,4 @@ Android emulator manual QA on 2026-05-07 verified:
 - richer statement history
 - reminders/notifications after Android toolchain work
 - optional exports for pay-later summaries
+

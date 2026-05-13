@@ -77,6 +77,8 @@ final class AppStrings {
       AppStringKey.cancel: 'Hủy',
       AppStringKey.save: 'Lưu',
       AppStringKey.search: 'Tìm kiếm',
+      AppStringKey.yes: 'Có',
+      AppStringKey.no: 'Không',
       AppStringKey.noData: 'Không có dữ liệu',
       AppStringKey.viewAll: 'Xem tất cả',
       AppStringKey.backToTransactions: 'Quay lại giao dịch',
@@ -130,32 +132,74 @@ final class AppStrings {
       AppStringKey.couldNotUpdateTransaction: 'Không thể cập nhật giao dịch.',
       AppStringKey.exportCsv: 'Xuất CSV',
       AppStringKey.exportPdf: 'Xuất PDF',
+      AppStringKey.exportPayLaterCsv: 'Xuất CSV trả sau',
+      AppStringKey.exportPayLaterPdf: 'Xuất PDF trả sau',
       AppStringKey.backup: 'Sao lưu',
       AppStringKey.exportCsvDescription:
           'Tải danh sách giao dịch dạng bảng để xử lý tiếp.',
       AppStringKey.exportPdfDescription:
           'Tạo báo cáo thu chi theo tháng để chia sẻ hoặc lưu trữ.',
+      AppStringKey.exportPayLaterCsvDescription:
+          'Xuất khoản trả góp, hóa đơn trả sau và lịch sử thanh toán sang CSV.',
+      AppStringKey.exportPayLaterPdfDescription:
+          'Tạo báo cáo PDF cho dư nợ, khoản tối thiểu và thanh toán trả sau.',
       AppStringKey.backupDescription:
-          'Chuẩn bị cho SQLite/Drift persistence ở các phase sau.',
+          'Sao lưu hoặc khôi phục toàn bộ dữ liệu cục bộ khi chuyển máy hay dọn browser data.',
       AppStringKey.exportingCsv: 'Đang xuất...',
       AppStringKey.exportingPdf: 'Đang xuất...',
+      AppStringKey.exportingPayLaterCsv: 'Đang xuất CSV trả sau...',
+      AppStringKey.exportingPayLaterPdf: 'Đang xuất PDF trả sau...',
+      AppStringKey.exportBackupJson: 'Xuất backup JSON',
+      AppStringKey.importBackupJson: 'Nhập backup JSON',
+      AppStringKey.exportingBackup: 'Đang sao lưu...',
+      AppStringKey.importingBackup: 'Đang nhập backup...',
       AppStringKey.viewRoadmap: 'Xem lộ trình',
       AppStringKey.comingSoon: 'Sắp ra mắt',
       AppStringKey.backupComingSoon: 'Sao lưu dữ liệu đang được phát triển',
       AppStringKey.csvExported: 'Đã xuất CSV',
       AppStringKey.pdfExported: 'Đã xuất PDF',
+      AppStringKey.backupExported: 'Đã xuất backup',
+      AppStringKey.backupImported: 'Đã khôi phục backup',
       AppStringKey.csvExportCancelled: 'Đã hủy xuất CSV.',
       AppStringKey.pdfExportCancelled: 'Đã hủy xuất PDF.',
+      AppStringKey.backupExportCancelled: 'Đã hủy xuất backup.',
+      AppStringKey.backupImportCancelled: 'Đã hủy nhập backup.',
       AppStringKey.csvExportUnsupported:
           'Xuất CSV chưa hỗ trợ lưu file trên nền tảng này.',
       AppStringKey.pdfExportUnsupported:
           'Xuất PDF chưa hỗ trợ lưu file trên nền tảng này.',
+      AppStringKey.backupExportUnsupported:
+          'Xuất backup chưa hỗ trợ trên nền tảng này.',
+      AppStringKey.backupImportUnsupported:
+          'Nhập backup chưa hỗ trợ trên nền tảng này.',
       AppStringKey.couldNotExportCsv: 'Không thể xuất CSV. Vui lòng thử lại.',
       AppStringKey.couldNotExportPdf: 'Không thể xuất PDF. Vui lòng thử lại.',
+      AppStringKey.couldNotExportBackup:
+          'Không thể xuất backup. Vui lòng thử lại.',
+      AppStringKey.couldNotImportBackup:
+          'Không thể nhập backup. Vui lòng kiểm tra file JSON.',
       AppStringKey.noTransactionsToExport: 'Không có giao dịch để xuất.',
       AppStringKey.transactionsLoadingTryAgain:
           'Dữ liệu giao dịch đang tải, thử lại sau.',
       AppStringKey.couldNotReadTransactions: 'Không thể đọc dữ liệu giao dịch.',
+      AppStringKey.loadingData: 'Đang tải dữ liệu...',
+      AppStringKey.backupHelpMessage:
+          'Dữ liệu web là browser-local. Hãy backup nếu muốn chuyển máy hoặc tránh mất dữ liệu khi xóa site data.',
+      AppStringKey.replaceLocalDataTitle: 'Ghi đè dữ liệu hiện tại?',
+      AppStringKey.replaceLocalDataMessage:
+          'Khôi phục theo chế độ replace sẽ ghi đè toàn bộ giao dịch, dữ liệu trả sau và tùy chọn đã sao lưu nếu có. Thao tác này không thể hoàn tác.',
+      AppStringKey.confirmRestore: 'Khôi phục ngay',
+      AppStringKey.restoreReplaceAll: 'Replace toàn bộ dữ liệu local',
+      AppStringKey.mergeRestoreDeferred:
+          'Chế độ merge được để dành cho phase sau để tránh trùng dữ liệu.',
+      AppStringKey.backupFileName: 'Tên file backup',
+      AppStringKey.backupExportedAt: 'Thời điểm export',
+      AppStringKey.backupContainsPreferences: 'Bao gồm ngôn ngữ và giao diện',
+      AppStringKey.backupSummaryTransactions: 'Giao dịch',
+      AppStringKey.backupSummaryPlans: 'Khoản trả góp',
+      AppStringKey.backupSummaryInvoices: 'Hóa đơn trả sau',
+      AppStringKey.backupSummaryPayments: 'Thanh toán',
+      AppStringKey.payments: 'Thanh toán',
       AppStringKey.payLaterTitle: 'Trả sau & trả góp',
       AppStringKey.payLaterSubtitle:
           'Theo dõi dư nợ, khoản tối thiểu cần trả và các nghĩa vụ sắp đến hạn trong ứng dụng.',
@@ -315,6 +359,8 @@ final class AppStrings {
       AppStringKey.cancel: 'Cancel',
       AppStringKey.save: 'Save',
       AppStringKey.search: 'Search',
+      AppStringKey.yes: 'Yes',
+      AppStringKey.no: 'No',
       AppStringKey.noData: 'No data',
       AppStringKey.viewAll: 'View all',
       AppStringKey.backToTransactions: 'Back to transactions',
@@ -368,33 +414,76 @@ final class AppStrings {
       AppStringKey.couldNotUpdateTransaction: 'Could not update transaction.',
       AppStringKey.exportCsv: 'Export CSV',
       AppStringKey.exportPdf: 'Export PDF',
+      AppStringKey.exportPayLaterCsv: 'Export Pay Later CSV',
+      AppStringKey.exportPayLaterPdf: 'Export Pay Later PDF',
       AppStringKey.backup: 'Backup',
       AppStringKey.exportCsvDescription:
           'Download the transaction list as a spreadsheet-friendly file.',
       AppStringKey.exportPdfDescription:
           'Generate a monthly income and expense report for sharing or storage.',
+      AppStringKey.exportPayLaterCsvDescription:
+          'Export installment plans, pay later invoices, and payment history to CSV.',
+      AppStringKey.exportPayLaterPdfDescription:
+          'Generate a PDF report for outstanding balances, minimum due, and payment history.',
       AppStringKey.backupDescription:
-          'Reserved for SQLite/Drift persistence follow-up phases.',
+          'Back up or restore all local data when moving devices or clearing browser storage.',
       AppStringKey.exportingCsv: 'Exporting...',
       AppStringKey.exportingPdf: 'Exporting...',
+      AppStringKey.exportingPayLaterCsv: 'Exporting Pay Later CSV...',
+      AppStringKey.exportingPayLaterPdf: 'Exporting Pay Later PDF...',
+      AppStringKey.exportBackupJson: 'Export backup JSON',
+      AppStringKey.importBackupJson: 'Import backup JSON',
+      AppStringKey.exportingBackup: 'Exporting backup...',
+      AppStringKey.importingBackup: 'Importing backup...',
       AppStringKey.viewRoadmap: 'View roadmap',
       AppStringKey.comingSoon: 'Coming soon',
       AppStringKey.backupComingSoon: 'Data backup is in development',
       AppStringKey.csvExported: 'CSV exported',
       AppStringKey.pdfExported: 'PDF exported',
+      AppStringKey.backupExported: 'Backup exported',
+      AppStringKey.backupImported: 'Backup restored',
       AppStringKey.csvExportCancelled: 'CSV export cancelled.',
       AppStringKey.pdfExportCancelled: 'PDF export cancelled.',
+      AppStringKey.backupExportCancelled: 'Backup export cancelled.',
+      AppStringKey.backupImportCancelled: 'Backup import cancelled.',
       AppStringKey.csvExportUnsupported:
           'CSV export is not supported on this platform.',
       AppStringKey.pdfExportUnsupported:
           'PDF export is not supported on this platform.',
+      AppStringKey.backupExportUnsupported:
+          'Backup export is not supported on this platform.',
+      AppStringKey.backupImportUnsupported:
+          'Backup import is not supported on this platform.',
       AppStringKey.couldNotExportCsv: 'Could not export CSV. Please try again.',
       AppStringKey.couldNotExportPdf: 'Could not export PDF. Please try again.',
+      AppStringKey.couldNotExportBackup:
+          'Could not export backup. Please try again.',
+      AppStringKey.couldNotImportBackup:
+          'Could not import backup. Please check the JSON file.',
       AppStringKey.noTransactionsToExport:
           'There are no transactions to export.',
       AppStringKey.transactionsLoadingTryAgain:
           'Transaction data is still loading. Please try again.',
       AppStringKey.couldNotReadTransactions: 'Could not read transaction data.',
+      AppStringKey.loadingData: 'Loading data...',
+      AppStringKey.backupHelpMessage:
+          'Web data is browser-local. Export a backup if you want to move devices or avoid data loss after clearing site data.',
+      AppStringKey.replaceLocalDataTitle: 'Replace current local data?',
+      AppStringKey.replaceLocalDataMessage:
+          'Replace mode will overwrite all transactions, Pay Later data, and any saved preferences included in the backup. This cannot be undone.',
+      AppStringKey.confirmRestore: 'Restore now',
+      AppStringKey.restoreReplaceAll: 'Replace all local data',
+      AppStringKey.mergeRestoreDeferred:
+          'Merge mode is deferred to a later phase to avoid duplicate data.',
+      AppStringKey.backupFileName: 'Backup file',
+      AppStringKey.backupExportedAt: 'Exported at',
+      AppStringKey.backupContainsPreferences:
+          'Includes language and appearance preferences',
+      AppStringKey.backupSummaryTransactions: 'Transactions',
+      AppStringKey.backupSummaryPlans: 'Installment plans',
+      AppStringKey.backupSummaryInvoices: 'Pay later invoices',
+      AppStringKey.backupSummaryPayments: 'Payments',
+      AppStringKey.payments: 'Payments',
       AppStringKey.payLaterTitle: 'Pay Later & Installments',
       AppStringKey.payLaterSubtitle:
           'Track outstanding balances, minimum amounts due, and upcoming obligations inside the app.',

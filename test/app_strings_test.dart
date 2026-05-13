@@ -17,6 +17,7 @@ void main() {
 
       expect(strings.t(AppStringKey.navSettings), 'Settings');
       expect(strings.t(AppStringKey.lightMode), 'Light');
+      expect(strings.t(AppStringKey.loadingData), 'Loading data...');
     });
 
     test('formats relative date safely', () {

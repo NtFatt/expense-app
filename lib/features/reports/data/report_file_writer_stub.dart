@@ -15,6 +15,7 @@ class _StubReportFileWriter implements ReportFileWriter {
   Future<ReportFileWriteResult> writeBytes({
     required String fileName,
     required List<int> bytes,
+    String androidDirectoryName = 'reports',
   }) async {
     return const ReportFileWriteResult.unsupported();
   }

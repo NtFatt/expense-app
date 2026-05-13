@@ -88,3 +88,4 @@ Evidence observed in the emulator sandbox:
 - Windows native Save As and cancel-flow export smoke is still pending manual verification.
 - Pay Later-specific export remains deferred.
 - Existing Pay Later domain rules can mark an installment as settled when installment-count conditions are met even if the manually entered test data leaves residual outstanding amount; this pass did not change that rule set.
+

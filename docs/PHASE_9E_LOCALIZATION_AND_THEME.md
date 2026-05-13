@@ -49,3 +49,4 @@ Phase 9E adds:
 3. Enable Flutter localization code generation
 4. Replace `AppStrings` lookups with generated `AppLocalizations`
 5. Keep `AppPreferencesController` as the source of the selected `Locale`
+

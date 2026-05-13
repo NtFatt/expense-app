@@ -1,0 +1,1 @@
+enum BackupRestoreMode { replaceAll, merge }

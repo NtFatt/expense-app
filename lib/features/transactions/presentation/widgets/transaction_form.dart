@@ -198,6 +198,9 @@ class _TransactionFormState extends State<TransactionForm> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
+              key: ValueKey<String>(
+                'transaction_category_${_selectedType.name}_$_selectedCategory',
+              ),
               initialValue: _selectedCategory,
               decoration: InputDecoration(
                 labelText: context.strings.t(AppStringKey.category),
